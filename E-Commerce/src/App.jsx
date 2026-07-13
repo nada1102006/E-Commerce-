@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
+const Layout = lazy(() => import("./Layout/Layout"));
 const Home = lazy(() => import("./pages/Home"));
 const Shop = lazy(() => import("./pages/Shop"));
 const ProductDetails = lazy(() => import("./pages/ProductDetails"));
@@ -22,14 +23,21 @@ const Loadable = (Component) => (props) => (
 const router = createBrowserRouter([
   { path: "/login", element: Loadable(Login)() },
   { path: "/register", element: Loadable(Register)() },
-  { path: "/", element: Loadable(Home)() },
-  { path: "/shop", element: Loadable(Shop)() },
-  { path: "/product-details", element: Loadable(ProductDetails)() },
-  { path: "/cart", element: Loadable(Cart)() },
-  { path: "/checkout", element: Loadable(Checkout)() },
-  { path: "/profile", element: Loadable(Profile)() },
-  { path: "/orders", element: Loadable(Orders)() },
-  { path: "*", element: <div>NOT FOUND(404)</div> }
+  {
+    path: "/", element: Loadable(Layout)(), children: [
+
+      { path: "/", element: Loadable(Home)() },
+      { path: "/shop", element: Loadable(Shop)() },
+      { path: "/product/:id", element: Loadable(ProductDetails)() },
+      { path: "/cart", element: Loadable(Cart)() },
+      { path: "/checkout", element: Loadable(Checkout)() },
+      { path: "/profile", element: Loadable(Profile)() },
+      { path: "/orders", element: Loadable(Orders)() },
+      { path: "*", element: <div>NOT FOUND(404)</div> }
+
+    ]
+  },
+
 ]);
 
 function App() {
