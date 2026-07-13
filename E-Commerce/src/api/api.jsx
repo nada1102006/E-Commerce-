@@ -28,4 +28,9 @@ api.interceptors.request.use(
   },
 )
 
-export default api
+export async function getProducts() {
+  const response = await api.get('/products');
+  return response?.data?.products ?? [];
+}
+
+export default api;
