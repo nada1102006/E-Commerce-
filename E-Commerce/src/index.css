@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+/* تفعيل dark mode عبر الكلاس */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* تنسيقات أساسية */
+@layer base {
+    * {
+        @apply border-slate-200 dark:border-slate-800 transition-colors duration-300;
+    }
+
+    body {
+        @apply bg-white text-slate-900 dark:bg-slate-950 dark:text-white transition-colors duration-300;
+    }
+}
+
+/* ========================================
+   تحسين التمريرات - أحجام كبيرة وواضحة
+   ======================================== */
+
+/* عرض الشريط - كبير وواضح */
+::-webkit-scrollbar {
+    width: 15px !important;
+    /* عرض كبير 20px */
+}
+
+@media (min-width=400px) {
+    ::-webkit-scrollbar {
+        width: 20px !important;
+        /* عرض كبير 20px */
+    }
+}
+
+/* خلفية الشريط */
+::-webkit-scrollbar-track {
+    background-color: rgb(200, 242, 249) !important;
+    border-radius: 0 !important;
+    padding: 4px 0 !important;
+    height: 100vh !important;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background-color: rgba(30, 41, 59, 0.7) !important;
+}
+
+/* الإبهام (المؤشر) - حجم كبير */
+::-webkit-scrollbar-thumb {
+    background-color: rgb(27, 208, 227) !important;
+    border-radius: 20px !important;
+    min-height: 50px !important;
+    /* زيادة كبيرة */
+    max-height: 80px !important;
+    /* زيادة كبيرة */
+    border: 5px solid transparent !important;
+    background-clip: padding-box !important;
+    transition: all 0.2s !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background-color: rgba(6, 182, 212, 0.7) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(0, 140, 238) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(38, 155, 176, 0.7) !important;
+}
+
+/* ===== الأسهم - حجم كبير وواضح ===== */
+
+/* السهم الأعلى */
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-color: #e2e8f0 !important;
+    height: 32px !important;
+    /* زيادة كبيرة */
+    width: 100% !important;
+    border-radius: 0 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m18 15-6-6-6 6'/%3E%3C/svg%3E") !important;
+    background-size: 20px !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    transition: all 0.2s !important;
+}
+
+.dark ::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-color: #334155 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m18 15-6-6-6 6'/%3E%3C/svg%3E") !important;
+}
+
+::-webkit-scrollbar-button:single-button:vertical:decrement:hover {
+    background-color: #cbd5e1 !important;
+}
+
+.dark ::-webkit-scrollbar-button:single-button:vertical:decrement:hover {
+    background-color: #475569 !important;
+}
+
+/* السهم الأسفل */
+::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-color: #e2e8f0 !important;
+    height: 32px !important;
+    /* زيادة كبيرة */
+    width: 100% !important;
+    border-radius: 0 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-size: 20px !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    transition: all 0.2s !important;
+}
+
+.dark ::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-color: #334155 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+}
+
+::-webkit-scrollbar-button:single-button:vertical:increment:hover {
+    background-color: #cbd5e1 !important;
+}
+
+.dark ::-webkit-scrollbar-button:single-button:vertical:increment:hover {
+    background-color: #476949 !important;
+}
+
+
+/* إضافة تأثيرات إضافية للأنيميشن */
+
+/* تأثير اهتزاز خفيف عند التبديل */
+@keyframes gentleShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+/* تأثير تلاشي مع تحريك */
+@keyframes slideFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+input:focus {
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+}
+
+.dark .Toastify__toast {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+}
+
+/* حل مشكلة autofill في dark mode */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  background-color: #1e293b !important;
+  background-clip: content-box !important;
+}
+
+/* في وضع light mode */
+:root:not(.dark) input:-webkit-autofill,
+:root:not(.dark) input:-webkit-autofill:hover,
+:root:not(.dark) input:-webkit-autofill:focus,
+:root:not(.dark) input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+  background-color: #ffffff !important;
+  background-clip: content-box !important;
+}
+
+/* لمنع الخلفية البيضاء عند التعبئة التلقائية */
+input:-webkit-autofill::first-line {
+  color: #ffffff !important;
+}
+
+:root:not(.dark) input:-webkit-autofill::first-line {
+  color: #0f172a !important;
+}
