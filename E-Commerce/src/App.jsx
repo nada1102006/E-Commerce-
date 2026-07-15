@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import DarkModeTestToggle from "./components/home/DarkModeTestToggle"; //temp
 
 
 const Login = lazy(() => import("./pages/Login"));
@@ -11,6 +12,7 @@ const Cart = lazy(() => import("./pages/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Orders = lazy(() => import("./pages/Orders"));
+
 
 
 const Loadable = (Component) => (props) => (
@@ -33,7 +35,12 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <DarkModeTestToggle /> {/* temp */}
+    </>
+  );
 }
 
 export default App;
