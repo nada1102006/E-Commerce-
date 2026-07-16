@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import DarkModeTestToggle from "./components/home/DarkModeTestToggle"; //temp
+import { createBrowserRouter, RouterProvider } from "react-router-dom"; //temp
 
 
 const Login = lazy(() => import("./pages/Login"));
@@ -46,9 +45,10 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
-      <DarkModeTestToggle /> {/* temp */}
+      
     </>
   );
 }
+
 
 export default App;

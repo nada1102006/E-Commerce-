@@ -68,7 +68,19 @@ export default function ProductCard({ product, isDarkMode, isFavorite, toggleFav
 
                     <div className="mb-4 flex items-center justify-between">
                         <div>
-                            <p className="text-lg font-bold text-primary-500">${finalPrice}</p>
+                            {/* <p className="text-lg font-bold text-primary-500">${finalPrice}</p> */}
+                            <p className="flex items-end gap-2">
+                                <span className="text-3xl md:text-4xl font-black tracking-tight text-primary-500">
+                                    {Number(finalPrice).toLocaleString("en-US", {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
+                                </span>
+
+                                <span className="mb-1 text-sm font-bold uppercase">
+                                    EGP
+                                </span>
+                            </p>
                             {discounted && (
                                 <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                     <span className="line-through">${price}</span>

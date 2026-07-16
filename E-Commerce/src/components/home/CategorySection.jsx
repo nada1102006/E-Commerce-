@@ -12,9 +12,7 @@ import {
 import CategoryCard from "./CategoryCard";
 import SectionHeader from "./SectionHeader";
 
-// Single source of truth for each category's display info (icon + accent color).
-// To add a new category: add it here, the counting logic below picks it up
-// automatically as long as the API's `product.category` matches the key.
+
 const categoryData = {
   electronics: {
     title: "Electronics",
@@ -48,8 +46,6 @@ const categoryData = {
   },
 };
 
-// Same grid classes as the real content below, so the skeleton doesn't
-// "jump" when the real cards pop in.
 const GRID_CLASSES = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4";
 
 function CategorySkeletonCard() {

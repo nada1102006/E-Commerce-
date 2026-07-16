@@ -17,6 +17,7 @@ export default function Products() {
         const loadProducts = async () => {
             try {
                 const items = await getProducts();
+                console.log({Products: products})
                 setProducts(items);
             } catch (fetchError) {
                 console.error(fetchError);
@@ -30,9 +31,8 @@ export default function Products() {
     }, []);
 
     const visibleProducts = products
-        .filter((product) => product?.featured)
-        .slice(0, 4);
-
+        .filter((product) => product?.featured).slice(0, 4);
+   
     // Toggle favorite state for a product card.
     const toggleFavorite = (productId) => {
         setFavorites((prev) =>

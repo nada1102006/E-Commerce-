@@ -28,9 +28,12 @@ api.interceptors.request.use(
   },
 )
 
+// Products.jsx (Featured Products section) imports this named export.
+// It was missing after the merge — added here to match how CategorySection
+// already reads the same /products endpoint (data.products array).
 export async function getProducts() {
-  const response = await api.get('/products');
-  return response?.data?.products ?? [];
+  const { data } = await api.get("/products");
+  return data.products || [];
 }
 
-export default api;
+export default api

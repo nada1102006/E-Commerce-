@@ -5,12 +5,14 @@ import HowItWorksSection from "../components/home/HowItWorksSection";
 import NewsletterSection from "../components/home/NewsletterSection";
 
 export default function Home() {
-  return <Products />;
   return (
     <>
+    
       <CategorySection />
+      <Products />
       <HowItWorksSection />
       <NewsletterSection />
     </>
   );
+  
 }
