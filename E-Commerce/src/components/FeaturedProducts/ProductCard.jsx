@@ -9,24 +9,51 @@ export default function ProductCard({ product, isDarkMode, isFavorite, toggleFav
     const discounted = hasDiscount(product);
     const discountPercent = getDiscountPercent(product);
 
+    const outOfStock = product?.stock <= 0;
+
+
     return (
         <Link
-            to={`/product/${product?._id}`}
-            className={`group block overflow-hidden rounded-3xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${isDarkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}
+
+           to={`/product/${product?._id}`}
+            className={`group block overflow-hidden rounded-3xl border shadow-sm transition-all duration-300 ${outOfStock
+                ? " opacity-40 "
+                : "hover:-translate-y-1 hover:shadow-xl"
+                } ${isDarkMode ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-white"}`}
         >
             <article>
                 <div className="relative h-56 overflow-hidden">
-                    {imageUrl ? (
-                        <img
-                            src={imageUrl}
-                            alt={product?.name}
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                        />
-                    ) : (
-                        <div className={`flex h-full items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
-                            No image
-                        </div>
-                    )}
+    {imageUrl ? (
+        <>
+            <img
+                src={imageUrl}
+                alt={product?.name}
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            />
+
+            {outOfStock && (
+                <>
+                    <div className="absolute inset-0 bg-black/45"></div>
+
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="rounded-full bg-red-600/90 px-6 py-2 text-lg font-bold text-white shadow-lg backdrop-blur-sm">
+                            Out Of Stock
+                        </span>
+                    </div>
+                </>
+            )}
+        </>
+    ) : (
+        <div
+            className={`flex h-full items-center justify-center ${
+                isDarkMode
+                    ? "bg-slate-800 text-slate-500"
+                    : "bg-slate-100 text-slate-400"
+            }`}
+        >
+            No image
+        </div>
+    )}
 
                     <span className="absolute left-4 top-4 rounded-full bg-primary-500 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
                         {product?.category || 'General'}
@@ -62,18 +89,18 @@ export default function ProductCard({ product, isDarkMode, isFavorite, toggleFav
                     </div>
 
                     <h3 className="mb-2 text-lg font-semibold">{product?.name || 'Product name'}</h3>
-                    <p className={`mb-4 line-clamp-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {/* <p className={`mb-4 line-clamp-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                         {product?.shortDescription || product?.description || 'No description available.'}
-                    </p>
+                    </p> */}
 
-                    <div className="mb-4 flex items-center justify-between">
+                    <div className="mb-5 flex items-center justify-between">
                         <div>
                             {/* <p className="text-lg font-bold text-primary-500">${finalPrice}</p> */}
                             <p className="flex items-end gap-2">
                                 <span className="text-3xl md:text-4xl font-black tracking-tight text-primary-500">
                                     {Number(finalPrice).toLocaleString("en-US", {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
                                     })}
                                 </span>
 
@@ -83,7 +110,13 @@ export default function ProductCard({ product, isDarkMode, isFavorite, toggleFav
                             </p>
                             {discounted && (
                                 <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                    <span className="line-through">${price}</span>
+                                    <span className="line-through">
+                                        {Number(price).toLocaleString("en-US", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
+                                        })}{" "}
+                                        EGP
+                                    </span>
                                 </p>
                             )}
                         </div>
@@ -92,8 +125,13 @@ export default function ProductCard({ product, isDarkMode, isFavorite, toggleFav
                         </div>
                     </div>
 
-                    <span className="block w-full rounded-full bg-primary-500 px-4 py-2.5 text-center text-sm font-semibold text-white transition group-hover:bg-primary-600">
-                        View Details
+                    <span
+                        className={`block w-full rounded-full px-4 py-2.5 text-center text-sm font-semibold transition ${outOfStock
+                                ? "bg-gray-500 text-white cursor-not-allowed"
+                                : "bg-primary-500 text-white group-hover:bg-primary-600"
+                            }`}
+                    >
+                        {outOfStock ? "Out Of Stock" : "View Details"}
                     </span>
                 </div>
             </article>
