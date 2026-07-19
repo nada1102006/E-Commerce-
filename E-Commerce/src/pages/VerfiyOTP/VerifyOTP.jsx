@@ -22,7 +22,7 @@ function VerifyOTP() {
   const [searchParams] = useSearchParams();
   const emailFromUrl = searchParams.get("email") || "";
   const { otp, setOtp, Slot } = useOTPInput();
-  const { isDarkMode } = useTheme();
+  useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -122,6 +122,7 @@ function VerifyOTP() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
   useEffect(() => {
     if (!emailFromUrl) {
       toast.warning("No email found. Please try again.");

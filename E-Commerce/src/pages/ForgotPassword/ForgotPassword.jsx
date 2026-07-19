@@ -17,7 +17,7 @@ import {
 
 function ForgotPassword() {
   // dark mode or light mode by localstorage :
-  const { isDarkMode } = useTheme();
+  useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("you@gmail.com");

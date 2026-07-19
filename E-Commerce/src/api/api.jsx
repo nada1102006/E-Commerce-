@@ -14,18 +14,18 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Get the user's token from local storage
-    let token = localStorage.getItem("userToken")
+    let token = localStorage.getItem("userToken");
 
     if (token) {
-     const cleanToken = token.replace(/['"]+/g, '').trim();// Remove quotes from the token
+      const cleanToken = token.replace(/['"]+/g, "").trim(); // Remove quotes from the token
       config.headers.Authorization = `Bearer ${cleanToken}`; // Set the Authorization header with the token
     }
 
     return config;
   },
   (error) => {
-    return Promise.reject(error)
+    return Promise.reject(error);
   },
-)
+);
 
-export default api
+export default api;
