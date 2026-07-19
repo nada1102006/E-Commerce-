@@ -37,18 +37,28 @@ export default function Shop() {
     try {
       const params = {
         page: 1,
-        limit: 20,
+        limit: 100, // Increased limit to allow frontend filtering to work well
       };
 
       if (searchQuery) params.search = searchQuery;
       if (category !== "All") params.category = category.toLowerCase();
-      if (minPrice) params.minPrice = minPrice;
-      if (maxPrice) params.maxPrice = maxPrice;
       if (sort) params.sort = sort;
 
       const { data } = await api.get("/products", { params });
       if (data.success) {
-        setProducts(data.products || []);
+        let fetchedProducts = data.products || [];
+        
+        // Filter locally based on the price AFTER discount
+        if (minPrice || maxPrice) {
+          fetchedProducts = fetchedProducts.filter(product => {
+            const newPrice = product.price - (product.discountPrice || 0);
+            const min = minPrice ? Number(minPrice) : 0;
+            const max = maxPrice ? Number(maxPrice) : Infinity;
+            return newPrice >= min && newPrice <= max;
+          });
+        }
+        
+        setProducts(fetchedProducts);
       }
     } catch (error) {
       toast.error("Failed to fetch products");
@@ -162,7 +172,7 @@ export default function Shop() {
 
   return (
     <div className="min-h-screen bg-white py-6 dark:bg-slate-950 w-full">
-      {/* التعديل هنا: شلنا container و max-w وخليناها w-full ومفرودة برياحتها */}
+
       <div className="w-full px-4 sm:px-8 md:px-12">
         
         {/* Search and Mobile Filter Toggle */}
@@ -174,8 +184,17 @@ export default function Shop() {
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm bg-white dark:bg-slate-950"
+              className="w-full pl-12 pr-10 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm bg-white dark:bg-slate-950 dark:text-white dark:border-slate-800"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                aria-label="Clear search"
+              >
+                <FiX className="text-lg" />
+              </button>
+            )}
           </div>
           <button 
             onClick={() => setShowMobileFilters(true)}
