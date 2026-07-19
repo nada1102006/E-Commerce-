@@ -49,14 +49,36 @@ function Login() {
         });
 
         if (response.data.success) {
-          const customer = response.data;
-          localStorage.setItem("userToken", JSON.stringify(customer.token));
+          const payload = response.data;
+          const token =
+            payload.token ||
+            payload.data?.token ||
+            payload.user?.token ||
+            payload.customer?.token ||
+            payload.accessToken ||
+            payload.data?.accessToken ||
+            payload.data?.user?.token;
+
+          if (token) {
+            localStorage.setItem("userToken", String(token));
+          }
+
+          const user =
+            payload.user ||
+            payload.customer ||
+            payload.data?.user ||
+            payload.data?.customer ||
+            null;
+          if (user) {
+            localStorage.setItem("user", JSON.stringify(user));
+          }
+
           toast.info("Logged In Successfully");
           setTimeout(() => {
             navigate("/");
           }, 2500);
         }
-      } else {
+      }  else {
         const registrationData = {
           email: credentials.email,
           password: credentials.password,

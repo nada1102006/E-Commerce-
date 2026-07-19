@@ -16,8 +16,10 @@ import {
   AlertCircle,
   Send,
   User,
+  Trash2
 } from "lucide-react";
 import api from "../api/api";
+import { toast } from "react-toastify";
 
 // ============================================================
 
@@ -50,6 +52,9 @@ function ProductDetails() {
   // Related products state
   const [relatedProducts, setRelatedProducts] = useState([]);
 
+    // Wishlist state for related products
+  const [wishlistIds, setWishlistIds] = useState([]);
+
   // ============================================================
 
  useEffect(() => {
@@ -80,10 +85,15 @@ function ProductDetails() {
 
   // ============================================================
   useEffect(() => {
+
+     if (!product?.category) return;
+
     async function fetchRelated() {
-      if (!product?.category) return;
+     
 
       try {
+
+        setRelatedLoading(true);
         const response = await api.get(`/products?category=${product.category}&limit=8`);
         const filtered = response.data.products.filter(
           (p) => p._id !== product._id
@@ -91,11 +101,38 @@ function ProductDetails() {
         setRelatedProducts(filtered.slice(0, 4));
       } catch (err) {
         console.error("Related products error:", err);
+      }finally {
+        setRelatedLoading(false);
+      }
+    }
+     async function fetchWishlist() {
+      try {
+        const response = await api.get("/wishlists/my");
+        const wishlist = response.data.wishlist || response.data.wishlist?.products || [];
+        const items = Array.isArray(wishlist)
+          ? wishlist
+          : Array.isArray(response.data.wishlist?.products)
+          ? response.data.wishlist.products
+          : [];
+        const ids = items.map((item) => {
+          if (typeof item === "string") return item;
+          if (item.productId?._id) return item.productId._id;
+          if (item.productId) return item.productId;
+          if (item.product?._id) return item.product._id;
+          if (item.product) return item.product;
+          if (item._id) return item._id;
+          return null;
+        }).filter(Boolean);
+        setWishlistIds(ids);
+        setIsWishlisted(ids.includes(id));
+      } catch (err) {
+        console.error("Wishlist fetch error:", err);
       }
     }
 
     fetchRelated();
-  }, [product]);
+    fetchWishlist();
+  }, [product, id]);
 
   // ============================================================
  
@@ -165,17 +202,47 @@ function ProductDetails() {
 
   // ============================================================
    async function toggleWishlist() {
+     if (!id) return;
     try {
       if (isWishlisted) {
-        await api.delete(`/wishlist/${product._id}`);
+        await api.delete(`/wishlists/remove/${id}`);
+         setIsWishlisted(false);
+        setWishlistIds((prev) => prev.filter((wid) => wid !== id));
       } else {
-        await api.post("/wishlist", { productId: product._id });
+         await api.post(`/wishlists/add/${id}`);
+        setIsWishlisted(true);
+        setWishlistIds((prev) => [...prev, id]);
       }
-      setIsWishlisted(!isWishlisted);
+       window.dispatchEvent(new Event("wishlist-updated"));
     } catch (err) {
-      console.error(err);
+        console.error("Wishlist error:", err);
+        toast.error("Please login to use wishlist");
+    
     }
   }
+
+  async function toggleRelatedWishlist(e, productId) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!productId) return;
+
+    const isInWishlist = wishlistIds.includes(productId);
+    try {
+      if (isInWishlist) {
+        await api.delete(`/wishlists/remove/${productId}`);
+        setWishlistIds((prev) => prev.filter((wid) => wid !== productId));
+      } else {
+        await api.post(`/wishlists/add/${productId}`);
+        setWishlistIds((prev) => [...prev, productId]);
+      }
+
+      window.dispatchEvent(new Event("wishlist-updated"));
+    } catch (err) {
+      console.error("Related wishlist error:", err);
+      toast.error("Please login to use wishlist.");
+    }
+  }
+
 
   // ============================================================
  
@@ -194,11 +261,11 @@ function ProductDetails() {
     e.preventDefault();
 
     if (reviewRating === 0) {
-      alert("Please select a star rating!");
+      toast.error("Please select a star rating!");
       return;
     }
     if (!reviewComment.trim()) {
-      alert("Please write a comment!");
+      toast.error("Please write a comment!");
       return;
     }
 
@@ -229,7 +296,7 @@ function ProductDetails() {
       }));
     } catch (err) {
       console.error(err);
-      alert("Failed to submit review. Make sure you're logged in.");
+     toast.error("Failed to submit review. Make sure you're logged in.");
     } finally {
       setReviewSubmitting(false);
     }

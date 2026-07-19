@@ -1,13 +1,13 @@
-
-import { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
-import {  Link } from "react-router-dom";
-// import {FiSun,FiMoon,FiSearch,FiX,FiMenu,FiLogIn} from "react-icons/fi";
+import { useState, useEffect, useRef } from "react";
+import { NavLink, Link } from "react-router-dom";
 import { FiSun, FiMoon, FiSearch, FiX, FiMenu, FiHeart, FiShoppingCart } from "react-icons/fi";
 
 export default function Header() {
   const [openSearch, setOpenSearch] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const searchWrapperRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
@@ -23,12 +23,27 @@ export default function Header() {
     }
   }, [darkMode]);
 
+  // Autofocus the input the moment the search bar finishes expanding.
+  useEffect(() => {
+    if (openSearch) searchInputRef.current?.focus();
+  }, [openSearch]);
+
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (openSearch && !searchWrapperRef.current?.contains(e.target)) {
+        setOpenSearch(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openSearch]);
+
   const links = [
     { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
     { name: "Orders", path: "/orders" },
     { name: "Wishlist", path: "/wishlist" },
-    
   ];
 
   return (
@@ -40,7 +55,7 @@ export default function Header() {
         <div className="flex items-center gap-3">
 
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-lg md:text-xl shadow-lg">
-            <FiShoppingCart/>
+            <FiShoppingCart />
           </div>
 
           <div>
@@ -94,67 +109,87 @@ export default function Header() {
 
         </nav>
 
-
-
-
-
-
-
         {/* Right Side */}
         <div className="flex items-center gap-2 md:gap-3">
 
-          <div className="relative">
-            {!openSearch && (
-              <button
-                onClick={() => setOpenSearch(true)}
-                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] flex items-center justify-center text-white hover:bg-[#1f2937] hover:text-indigo-500 transition"
-              >
-                <FiSearch />
-              </button>
-            )}
 
-            {openSearch && (
-              <div className="absolute right-0 top-0 z-50 flex items-center bg-[#111827] rounded-full px-4 py-2 w-[260px] sm:w-[320px] shadow-xl animate-in fade-in duration-300">
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Search..."
-                  className="flex-1 bg-transparent outline-none text-white placeholder:text-gray-400"
-                />
+          <div
+            ref={searchWrapperRef}
+            className={`
+              flex items-center h-10 md:h-11 rounded-full bg-[#111827]
+              transition-[width] duration-300 ease-in-out overflow-hidden shrink-0
+              ${openSearch ? "w-[200px] sm:w-[280px] px-3" : "w-10 md:w-11"}
+            `}
+          >
+            <button
+              type="button"
+              onClick={() => setOpenSearch((v) => !v)}
+              aria-label={openSearch ? "Close search" : "Open search"}
+              className="flex items-center justify-center cursor-pointer w-10 h-10 md:w-11 md:h-11  shrink-0 text-white hover:text-indigo-500 transition-colors"
+            >
+              <FiSearch />
+            </button>
 
-                <button
-                  onClick={() => setOpenSearch(false)}
-                  className="ml-2 text-white hover:text-red-400"
-                >
-                  <FiX size={20} />
-                </button>
-              </div>
-            )}
+         <input
+  ref={searchInputRef}
+  type="text"
+  placeholder="Search..."
+  style={{ outline: "none", outlineColor: "#111827", boxShadow: "none" }}
+  className={`
+             bg-transparent
+             
+             border-0
+             outline-none
+             ring-0
+             focus:border-0
+             focus:outline-none
+             focus:ring-0
+             focus:ring-transparent
+             focus-visible:outline-none
+             focus-visible:ring-0
+             shadow-none
+             focus:shadow-none text-white placeholder:text-gray-400 min-w-0
+             transition-opacity duration-200 ease-in-out
+             ${openSearch ? "opacity-100 w-full ml-1 delay-150" : "opacity-0 w-0 pointer-events-none"}
+           `}
+/>
+
+            <button
+              type="button"
+              onClick={() => setOpenSearch(false)}
+              aria-label="Clear search"
+              className={`
+                shrink-0 text-white hover:text-red-400 transition-opacity duration-150
+                ${openSearch ? "opacity-100" : "opacity-0 pointer-events-none"}
+              `}
+            >
+              <FiX size={18} />
+            </button>
           </div>
 
           {/* Dark Mode */}
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-indigo-500 transition"
+            className="w-10 h-10 cursor-pointer md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-indigo-500 transition"
           >
-            {darkMode ? <FiMoon /> : <FiSun />}
+            {darkMode ? <FiMoon  /> : <FiSun />}
           </button>
 
           {/* Wishlist */}
-          <Link  to="/wishlist"
-          className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-pink-500 transition">
-           <FiHeart/>
+          <Link to="/wishlist"
+            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-pink-500 transition">
+            <FiHeart />
           </Link>
 
           {/* Cart */}
           <Link to="/cart"
-          className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-indigo-500 transition">
-            <FiShoppingCart/>
+            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-indigo-500 transition">
+            <FiShoppingCart />
           </Link>
 
           {/* Login */}
-          <Link  to="/login"
-          className="hidden lg:block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-full font-semibold transition duration-300 shadow-lg">
+          <Link to="/login"
+            className="hidden lg:block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-full font-semibold transition duration-300 shadow-lg">
             Login
           </Link>
 
@@ -205,7 +240,6 @@ export default function Header() {
           >
             Login
           </Link>
-
 
         </div>
       </div>

@@ -162,7 +162,7 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-8">
+    <div className="min-h-screen bg-white py-8 dark:bg-slate-950">
       <div className="container mx-auto px-4 max-w-7xl">
         
         {/* Search and Mobile Filter Toggle */}
@@ -174,7 +174,7 @@ export default function Shop() {
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm bg-white"
+              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm bg-white dark:bg-slate-950"
             />
           </div>
           <button 
@@ -185,18 +185,18 @@ export default function Shop() {
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8 ">
           
           {showMobileFilters && (
             <div 
-              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden "
               onClick={() => setShowMobileFilters(false)}
             />
           )}
 
           <div className={`
             fixed inset-y-0 right-0 w-[280px] bg-white z-50 p-6 shadow-2xl transform transition-transform duration-300 overflow-y-auto
-            lg:static lg:w-64 lg:p-0 lg:shadow-none lg:z-auto lg:transform-none lg:overflow-visible flex-shrink-0
+            lg:static lg:w-64 lg:p-0 lg:shadow-none lg:z-auto lg:transform-none lg:overflow-visible flex-shrink-0 dark:bg-slate-950
             ${showMobileFilters ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
           `}>
             
@@ -235,7 +235,7 @@ export default function Shop() {
                   placeholder="Min"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-black dark:text-white"
                 />
                 <input
                   type="number"
@@ -252,7 +252,7 @@ export default function Shop() {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
+                className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-slate-900"
               >
                 <option value="">Default</option>
                 <option value="price_asc">Price: Low to High</option>
@@ -297,7 +297,7 @@ export default function Shop() {
                     <div 
                       key={product._id} 
                       onClick={() => navigate(`/product-details?id=${product._id}`, { state: { product } })}
-                      className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative flex flex-col cursor-pointer"
+                      className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative flex flex-col cursor-pointer dark:bg-slate-950 dark:border-slate-950"
                     >
                       <div className="relative aspect-[4/5] bg-gray-50 overflow-hidden flex justify-center items-center p-4">
                         <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
@@ -347,7 +347,7 @@ export default function Shop() {
                         </h4>
                         
                         <div className="flex items-center gap-1 mb-3">
-                          <div className="flex text-yellow-400 text-xs">
+                          <div className="flex text-yellow-400 text-xs ">
                             {renderStars(product.averageRating || 0)}
                           </div>
                           <span className="text-xs text-gray-500 ml-1">
@@ -357,7 +357,7 @@ export default function Shop() {
 
                         <div className="mt-auto flex flex-col gap-3">
                           <div className="flex items-end gap-2">
-                            <span className="text-xl font-extrabold text-slate-900">
+                            <span className="text-xl font-extrabold text-slate-900 dark:text-white">
                               EGP {newPrice}
                             </span>
                             {hasDiscount && (
