@@ -316,10 +316,7 @@ export default function Profile() {
     localStorage.removeItem("isLogin");
     localStorage.removeItem("username");
     localStorage.removeItem("user");
-
-    // تحديث حالة Header عن طريق إرسال حدث
     window.dispatchEvent(new Event("storage"));
-
     navigate("/login", { replace: true });
   };
 
