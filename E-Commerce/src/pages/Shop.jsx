@@ -37,18 +37,28 @@ export default function Shop() {
     try {
       const params = {
         page: 1,
-        limit: 20,
+        limit: 100, // Increased limit to allow frontend filtering to work well
       };
 
       if (searchQuery) params.search = searchQuery;
       if (category !== "All") params.category = category.toLowerCase();
-      if (minPrice) params.minPrice = minPrice;
-      if (maxPrice) params.maxPrice = maxPrice;
       if (sort) params.sort = sort;
 
       const { data } = await api.get("/products", { params });
       if (data.success) {
-        setProducts(data.products || []);
+        let fetchedProducts = data.products || [];
+        
+        // Filter locally based on the price AFTER discount
+        if (minPrice || maxPrice) {
+          fetchedProducts = fetchedProducts.filter(product => {
+            const newPrice = product.price - (product.discountPrice || 0);
+            const min = minPrice ? Number(minPrice) : 0;
+            const max = maxPrice ? Number(maxPrice) : Infinity;
+            return newPrice >= min && newPrice <= max;
+          });
+        }
+        
+        setProducts(fetchedProducts);
       }
     } catch (error) {
       toast.error("Failed to fetch products");
@@ -74,7 +84,6 @@ export default function Shop() {
   }, []);
 
   useEffect(() => {
-    // search/filters
     const timer = setTimeout(() => {
       fetchProducts();
     }, 500);
@@ -162,20 +171,30 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen bg-white py-8 dark:bg-slate-950">
-      <div className="container mx-auto px-4 max-w-7xl">
+    <div className="min-h-screen bg-white py-6 dark:bg-slate-950 w-full">
+
+      <div className="w-full px-4 sm:px-8 md:px-12">
         
         {/* Search and Mobile Filter Toggle */}
-        <div className="mb-8 flex gap-3">
-          <div className="relative flex-1">
+        <div className="mb-8 flex gap-3 w-full">
+          <div className="relative flex-1 w-full">
             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
             <input
               type="text"
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm bg-white dark:bg-slate-950"
+              className="w-full pl-12 pr-10 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm bg-white dark:bg-slate-950 dark:text-white dark:border-slate-800"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                aria-label="Clear search"
+              >
+                <FiX className="text-lg" />
+              </button>
+            )}
           </div>
           <button 
             onClick={() => setShowMobileFilters(true)}
@@ -185,11 +204,11 @@ export default function Shop() {
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 ">
+        <div className="flex flex-col lg:flex-row gap-8 w-full">
           
           {showMobileFilters && (
             <div 
-              className="fixed inset-0 bg-black/50 z-40 lg:hidden "
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
               onClick={() => setShowMobileFilters(false)}
             />
           )}
@@ -209,69 +228,69 @@ export default function Shop() {
 
             <div className="space-y-8">
               <div>
-              <h3 className="font-semibold text-lg text-gray-800 mb-4">Category</h3>
-              <div className="space-y-3">
-                {categories.map((cat) => (
-                  <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
-                    <input
-                      type="radio"
-                      name="category"
-                      value={cat}
-                      checked={category === cat}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                    />
-                    <span className="text-gray-600 group-hover:text-gray-900">{cat}</span>
-                  </label>
-                ))}
+                <h3 className="font-semibold text-lg text-gray-800 mb-4">Category</h3>
+                <div className="space-y-3">
+                  {categories.map((cat) => (
+                    <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="category"
+                        value={cat}
+                        checked={category === cat}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                      />
+                      <span className="text-gray-600 group-hover:text-gray-900">{cat}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h3 className="font-semibold text-lg text-gray-800 mb-4">Price Range</h3>
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-black dark:text-white"
-                />
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
+              <div>
+                <h3 className="font-semibold text-lg text-gray-800 mb-4">Price Range</h3>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-black dark:text-white"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h3 className="font-semibold text-lg text-gray-800 mb-4">Sort By</h3>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-slate-900"
+              <div>
+                <h3 className="font-semibold text-lg text-gray-800 mb-4">Sort By</h3>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-slate-900"
+                >
+                  <option value="">Default</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                  <option value="rating">Top Rated</option>
+                </select>
+              </div>
+
+              <button
+                onClick={handleClearFilters}
+                className="w-full py-2 px-4 border border-indigo-200 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors font-medium"
               >
-                <option value="">Default</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-                <option value="rating">Top Rated</option>
-              </select>
-            </div>
-
-            <button
-              onClick={handleClearFilters}
-              className="w-full py-2 px-4 border border-indigo-200 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors font-medium"
-            >
-              Clear All Filters
-            </button>
+                Clear All Filters
+              </button>
             </div>
           </div>
 
-          {/* Product*/}
-          <div className="flex-1">
+          {/* Product Grid */}
+          <div className="flex-1 w-full">
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -281,7 +300,7 @@ export default function Shop() {
                 No products found.
               </div>
             ) : (
-              <div className="grid grid-cols-1 min-[500px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 min-[500px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
                 {products.map((product) => {
                   const hasDiscount = product.discountPrice > 0;
                   const newPrice = product.price - (product.discountPrice || 0);
@@ -313,7 +332,7 @@ export default function Shop() {
                               -{discountPercent}%
                             </span>
                           )}
-                           <button 
+                          <button 
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleWishlist(product._id);
@@ -347,7 +366,7 @@ export default function Shop() {
                         </h4>
                         
                         <div className="flex items-center gap-1 mb-3">
-                          <div className="flex text-yellow-400 text-xs ">
+                          <div className="flex text-yellow-400 text-xs">
                             {renderStars(product.averageRating || 0)}
                           </div>
                           <span className="text-xs text-gray-500 ml-1">
