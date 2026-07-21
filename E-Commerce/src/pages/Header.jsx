@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FiSun, FiMoon, FiSearch, FiX, FiMenu, FiHeart, FiShoppingCart } from "react-icons/fi";
+import { useAllProduct } from "../context/AllProductContext";
 
 export default function Header() {
   const [openSearch, setOpenSearch] = useState(false);
@@ -8,6 +9,7 @@ export default function Header() {
 
   const searchWrapperRef = useRef(null);
   const searchInputRef = useRef(null);
+  const { wishlistCount } = useAllProduct();
 
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
@@ -177,8 +179,13 @@ export default function Header() {
 
           {/* Wishlist */}
           <Link to="/wishlist"
-            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-pink-500 transition">
+            className="relative w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-pink-500 transition">
             <FiHeart />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {wishlistCount > 9 ? '9+' : wishlistCount}
+              </span>
+            )}
           </Link>
 
           {/* Cart */}

@@ -107,6 +107,7 @@ import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HandleLottie from "./components/HandleLottie/HandleLottie";
 import { ThemeProvider } from "./context/ThemeContext"; // استيراد الـ Provider
+import { AllProductProvider } from "./context/AllProductContext";
 import Layout from "./Layout/Layout";
 
 // استيراد الصفحات
@@ -161,7 +162,9 @@ function App() {
   // التغليف بالـ Provider هنا يضمن أن كل ما بداخل الـ Router (والـ Layout) يرى الـ Context
   return (
     <ThemeProvider>
-      <RouterProvider router={router} />
+      <AllProductProvider>
+        <RouterProvider router={router} />
+      </AllProductProvider>
     </ThemeProvider>
   );
 }

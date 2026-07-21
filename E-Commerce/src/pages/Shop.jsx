@@ -141,6 +141,7 @@ export default function Shop() {
           return newSet;
         });
       }
+      window.dispatchEvent(new Event("wishlist-updated"));
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to update wishlist", toastStyle);
     }
