@@ -1,18 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FiSun, FiMoon, FiSearch, FiX, FiMenu, FiHeart, FiShoppingCart } from "react-icons/fi";
+import api from "../api/api";
+import { useCart } from "../context/CartContext";
+
 
 export default function Header() {
   const [openSearch, setOpenSearch] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
+const { cart } = useCart();
   const searchWrapperRef = useRef(null);
   const searchInputRef = useRef(null);
 
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
-
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -182,10 +184,20 @@ export default function Header() {
           </Link>
 
           {/* Cart */}
-          <Link to="/cart"
-            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-indigo-500 transition">
-            <FiShoppingCart />
-          </Link>
+        <Link
+  to="/cart"
+  className="relative w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-indigo-500 transition"
+>
+  <FiShoppingCart />
+
+ {cart.itemCount > 0 && (
+  <span
+    className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
+  >
+    {cart.itemCount}
+  </span>
+)}
+</Link>
 
           {/* Login */}
           <Link to="/login"
