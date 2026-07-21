@@ -124,6 +124,7 @@ const Orders = lazy(() => import("./pages/Orders"));
 const OrderDetails = lazy(() => import("./pages/OrderDetails"));
 const WhishList = lazy(() => import("./pages/WhishList"))
 
+
 const Loadable = (Component) => (props) => (
   <Suspense fallback={<HandleLottie state="secondary" />}>
     <Component {...props} />

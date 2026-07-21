@@ -11,7 +11,7 @@ export default function Footer() {
     { name: "Wishlist", path: "/wishlist" },
   ];
 
-  
+
   return (
     <footer className="bg-slate-900 dark:bg-white-500 text-white ">
 
@@ -26,32 +26,29 @@ export default function Footer() {
             </p>
           </div>
 
-         {/* Quick Links */}
+          {/* Quick Links */}
           <div className="text-center">
             <h3 className="text-xl font-semibold mb-5">Quick Links</h3>
-            <ul className="space-y-3 text-gray-400">
-              {links.map((link) => (
-                <li key={link.path}>
-                  <Link 
-                    to={link.path} 
-                    className="hover:text-indigo-500 transition cursor-pointer"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+            <ul className="grid grid-cols-2 gap-y-4 gap-x-1 text-gray-400 justify-items-center">              {links.map((link) => (
+              <li key={link.path}>
+                <Link
+                  to={link.path}
+                  className="hover:text-indigo-500 transition"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
             </ul>
           </div>
 
           {/* Social */}
-          <div className="text-center lg:text-right">
-
+          <div className="flex flex-col items-center">
             <h3 className="text-xl font-semibold mb-5">
               Follow Us
             </h3>
 
-            <div className="flex justify-center lg:justify-end gap-4">
-
+            <div className="flex justify-center gap-4">
               <button className="w-11 h-11 rounded-full border border-gray-600 flex items-center justify-center hover:border-indigo-500 hover:text-indigo-500 transition duration-300">
                 <FiGlobe size={20} />
               </button>
