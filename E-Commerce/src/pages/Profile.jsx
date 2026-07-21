@@ -5,8 +5,16 @@ import api from "../api/api";
 
 const profileEndpoints = ["/user/profile", "/users/me", "/profile", "/me"];
 const updateEndpoints = ["/user/profile", "/users/me", "/profile", "/me"];
-const otpEndpoints = ["/auth/forgot-password", "/forgot-password", "/users/forgot-password"];
-const resetPasswordEndpoints = ["/auth/reset-password", "/reset-password", "/users/reset-password"];
+const otpEndpoints = [
+  "/auth/forgot-password",
+  "/forgot-password",
+  "/users/forgot-password",
+];
+const resetPasswordEndpoints = [
+  "/auth/reset-password",
+  "/reset-password",
+  "/users/reset-password",
+];
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -29,7 +37,11 @@ export default function Profile() {
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const [passwordEmail, setPasswordEmail] = useState("");
   const [passwordStep, setPasswordStep] = useState("email");
-  const [passwordData, setPasswordData] = useState({ otp: "", newPassword: "", confirmPassword: "" });
+  const [passwordData, setPasswordData] = useState({
+    otp: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
   const [sendingOtp, setSendingOtp] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
@@ -42,7 +54,7 @@ export default function Profile() {
   };
 
   const requestWithFallback = async (method, endpoints, data = null) => {
-    let lastError = null
+    let lastError = null;
 
     for (const endpoint of endpoints) {
       try {
@@ -53,7 +65,7 @@ export default function Profile() {
         });
       } catch (error) {
         const status = error?.response?.status;
-        lastError = error
+        lastError = error;
 
         if (status === 401) {
           throw error;
@@ -70,7 +82,7 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     setLoading(true);
-    setMessage({ type: "", text: "" })
+    setMessage({ type: "", text: "" });
 
     try {
       const response = await requestWithFallback("get", profileEndpoints);
@@ -84,9 +96,11 @@ export default function Profile() {
           avatar: profileData.avatar || "",
         });
 
-        const firstAddress = Array.isArray(profileData.addresses) && profileData.addresses.length > 0
-          ? profileData.addresses[0]
-          : {};
+        const firstAddress =
+          Array.isArray(profileData.addresses) &&
+          profileData.addresses.length > 0
+            ? profileData.addresses[0]
+            : {};
 
         setAddressData({
           country: firstAddress?.country || "",
@@ -100,7 +114,7 @@ export default function Profile() {
       }
     } catch (error) {
       const msg = getErrorMessage(error);
-      setMessage({ type: "error", text: msg })
+      setMessage({ type: "error", text: msg });
     } finally {
       setLoading(false);
     }
@@ -128,9 +142,10 @@ export default function Profile() {
         avatar: user.avatar || "",
       });
 
-      const firstAddress = Array.isArray(user.addresses) && user.addresses.length > 0
-        ? user.addresses[0]
-        : {};
+      const firstAddress =
+        Array.isArray(user.addresses) && user.addresses.length > 0
+          ? user.addresses[0]
+          : {};
 
       setAddressData({
         country: firstAddress?.country || "",
@@ -165,9 +180,11 @@ export default function Profile() {
           avatar: updatedUser.avatar || "",
         });
 
-        const firstAddress = Array.isArray(updatedUser.addresses) && updatedUser.addresses.length > 0
-          ? updatedUser.addresses[0]
-          : {};
+        const firstAddress =
+          Array.isArray(updatedUser.addresses) &&
+          updatedUser.addresses.length > 0
+            ? updatedUser.addresses[0]
+            : {};
 
         setAddressData({
           country: firstAddress?.country || "",
@@ -200,7 +217,9 @@ export default function Profile() {
     setMessage({ type: "", text: "" });
 
     try {
-      const existingAddress = Array.isArray(user?.addresses) ? user.addresses[0] : null;
+      const existingAddress = Array.isArray(user?.addresses)
+        ? user.addresses[0]
+        : null;
       const address = existingAddress?._id
         ? { ...existingAddress, ...addressData }
         : addressData;
@@ -236,7 +255,9 @@ export default function Profile() {
     setSendingOtp(true);
     setMessage({ type: "", text: "" });
     try {
-      const response = await requestWithFallback("post", otpEndpoints, { email });
+      const response = await requestWithFallback("post", otpEndpoints, {
+        email,
+      });
       setMessage({
         type: "success",
         text: response?.data?.message || "OTP sent to your email",
@@ -251,7 +272,10 @@ export default function Profile() {
 
   const handleResetPassword = async () => {
     if (!passwordData.otp || !passwordData.newPassword) {
-      setMessage({ type: "error", text: "Please enter the OTP and your new password" });
+      setMessage({
+        type: "error",
+        text: "Please enter the OTP and your new password",
+      });
       return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -262,13 +286,17 @@ export default function Profile() {
     setResettingPassword(true);
     setMessage({ type: "", text: "" });
     try {
-      const response = await requestWithFallback("post", resetPasswordEndpoints, {
-        email: passwordEmail.trim(),
-        otp: passwordData.otp,
-        code: passwordData.otp,
-        newPassword: passwordData.newPassword,
-        password: passwordData.newPassword,
-      });
+      const response = await requestWithFallback(
+        "post",
+        resetPasswordEndpoints,
+        {
+          email: passwordEmail.trim(),
+          otp: passwordData.otp,
+          code: passwordData.otp,
+          newPassword: passwordData.newPassword,
+          password: passwordData.newPassword,
+        },
+      );
       setMessage({
         type: "success",
         text: response?.data?.message || "Password changed successfully",
@@ -285,6 +313,13 @@ export default function Profile() {
 
   const handleLogout = () => {
     localStorage.removeItem("userToken");
+    localStorage.removeItem("isLogin");
+    localStorage.removeItem("username");
+    localStorage.removeItem("user");
+
+    // تحديث حالة Header عن طريق إرسال حدث
+    window.dispatchEvent(new Event("storage"));
+
     navigate("/login", { replace: true });
   };
 
@@ -316,20 +351,30 @@ export default function Profile() {
                 <FaUserCircle className="h-24 w-24 text-slate-400" />
               )}
               <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Customer</p>
-                <h1 className="text-2xl font-semibold text-slate-900">{user?.username || "Customer"}</h1>
-                <p className="mt-1 text-sm text-slate-500">{user?.role || "Customer"}</p>
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-500">
+                  Customer
+                </p>
+                <h1 className="text-2xl font-semibold text-slate-900">
+                  {user?.username || "Customer"}
+                </h1>
+                <p className="mt-1 text-sm text-slate-500">
+                  {user?.role || "Customer"}
+                </p>
               </div>
             </div>
 
             <div className="grid gap-4 text-sm md:grid-cols-2">
               <div className="rounded-3xl bg-slate-50 px-4 py-4">
                 <p className="text-slate-500">Email</p>
-                <p className="mt-2 font-medium text-slate-800">{user?.email || "customer@gmail.com"}</p>
+                <p className="mt-2 font-medium text-slate-800">
+                  {user?.email || "customer@gmail.com"}
+                </p>
               </div>
               <div className="rounded-3xl bg-slate-50 px-4 py-4">
                 <p className="text-slate-500">Phone</p>
-                <p className="mt-2 font-medium text-slate-800">{user?.phone || "101393372"}</p>
+                <p className="mt-2 font-medium text-slate-800">
+                  {user?.phone || "101393372"}
+                </p>
               </div>
             </div>
 
@@ -350,8 +395,12 @@ export default function Profile() {
 
         {isEditing && (
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
-            <h2 className="text-xl font-semibold text-slate-900">Edit Profile</h2>
-            <p className="mt-1 text-sm text-slate-500">Update your profile and address information.</p>
+            <h2 className="text-xl font-semibold text-slate-900">
+              Edit Profile
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Update your profile and address information.
+            </p>
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -455,8 +504,12 @@ export default function Profile() {
               <FaMapMarkerAlt />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Addresses</h2>
-              <p className="text-sm text-slate-500">Add or edit your main shipping address.</p>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Addresses
+              </h2>
+              <p className="text-sm text-slate-500">
+                Add or edit your main shipping address.
+              </p>
             </div>
           </div>
 
@@ -523,8 +576,12 @@ export default function Profile() {
               <FaLock />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Change Password</h2>
-              <p className="text-sm text-slate-500">Update your account password for extra security.</p>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Change Password
+              </h2>
+              <p className="text-sm text-slate-500">
+                Update your account password for extra security.
+              </p>
             </div>
           </div>
 
@@ -533,7 +590,11 @@ export default function Profile() {
             onClick={() => {
               setPasswordEmail(user?.email || "");
               setPasswordStep("email");
-              setPasswordData({ otp: "", newPassword: "", confirmPassword: "" });
+              setPasswordData({
+                otp: "",
+                newPassword: "",
+                confirmPassword: "",
+              });
               setIsPasswordOpen(true);
               setMessage({ type: "", text: "" });
             }}
@@ -554,7 +615,9 @@ export default function Profile() {
         {isPasswordOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
             <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
-              <h2 className="text-xl font-semibold text-slate-900">Change Password</h2>
+              <h2 className="text-xl font-semibold text-slate-900">
+                Change Password
+              </h2>
               <p className="mt-2 text-sm text-slate-500">
                 {passwordStep === "email"
                   ? "We'll send an OTP to your email to verify your identity."
@@ -574,21 +637,36 @@ export default function Profile() {
                     type="text"
                     inputMode="numeric"
                     value={passwordData.otp}
-                    onChange={(e) => setPasswordData((prev) => ({ ...prev, otp: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        otp: e.target.value,
+                      }))
+                    }
                     placeholder="OTP code"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-600"
                   />
                   <input
                     type="password"
                     value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        newPassword: e.target.value,
+                      }))
+                    }
                     placeholder="New password"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-600"
                   />
                   <input
                     type="password"
                     value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        confirmPassword: e.target.value,
+                      }))
+                    }
                     placeholder="Confirm new password"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-600"
                   />
@@ -597,13 +675,21 @@ export default function Profile() {
               <div className="mt-4 flex gap-2">
                 <button
                   type="button"
-                  onClick={passwordStep === "email" ? handleSendOtp : handleResetPassword}
+                  onClick={
+                    passwordStep === "email"
+                      ? handleSendOtp
+                      : handleResetPassword
+                  }
                   disabled={sendingOtp || resettingPassword}
                   className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
                 >
                   {passwordStep === "email"
-                    ? (sendingOtp ? "Sending..." : "Send OTP")
-                    : (resettingPassword ? "Changing..." : "Change Password")}
+                    ? sendingOtp
+                      ? "Sending..."
+                      : "Send OTP"
+                    : resettingPassword
+                      ? "Changing..."
+                      : "Change Password"}
                 </button>
                 <button
                   type="button"
@@ -622,5 +708,4 @@ export default function Profile() {
       </div>
     </div>
   );
-
 }

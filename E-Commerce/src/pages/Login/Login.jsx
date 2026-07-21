@@ -18,7 +18,7 @@ import {
 
 function Login() {
   // dark mode or light mode by localstorage :
-  const { isDarkMode } = useTheme();
+   useTheme();
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
   const navigate = useNavigate();
