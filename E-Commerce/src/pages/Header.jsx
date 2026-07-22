@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FiSun, FiMoon, FiSearch, FiX, FiMenu, FiHeart, FiShoppingCart } from "react-icons/fi";
-import { useAllProduct } from "../context/AllProductContext";
 
 export default function Header() {
   const [openSearch, setOpenSearch] = useState(false);
@@ -9,7 +8,6 @@ export default function Header() {
 
   const searchWrapperRef = useRef(null);
   const searchInputRef = useRef(null);
-  const { wishlistCount } = useAllProduct();
 
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
@@ -49,7 +47,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed top-3 md:top-5 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl bg-[#070B1A]/95 backdrop-blur-lg rounded-2xl lg:rounded-full shadow-2xl border border-white/10">
+    <header className="fixed top-3 md:top-5 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl dark:bg-[#070B1A]/95 backdrop-blur-lg rounded-2xl lg:rounded-full shadow-2xl border border-white/10">
 
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
 
@@ -61,7 +59,7 @@ export default function Header() {
           </div>
 
           <div>
-            <h2 className="text-white font-bold text-lg md:text-xl">
+            <h2 className="text-black font-bold text-lg md:text-xl dark:text-white">
               ShopWise
             </h2>
 
@@ -84,7 +82,7 @@ export default function Header() {
                 relative pb-2 text-lg font-medium transition-all duration-300
                 ${isActive
                   ? "text-indigo-500"
-                  : "text-white hover:text-indigo-500"
+                  : "text-black hover:text-indigo-500 dark:text-white"
                 }
 
                 after:absolute
@@ -118,7 +116,7 @@ export default function Header() {
           <div
             ref={searchWrapperRef}
             className={`
-              flex items-center h-10 md:h-11 rounded-full bg-[#111827]
+              flex items-center h-10 md:h-11 rounded-full bg-indigo-500 dark:bg-[#111827]
               transition-[width] duration-300 ease-in-out overflow-hidden shrink-0
               ${openSearch ? "w-[200px] sm:w-[280px] px-3" : "w-10 md:w-11"}
             `}
@@ -127,7 +125,7 @@ export default function Header() {
               type="button"
               onClick={() => setOpenSearch((v) => !v)}
               aria-label={openSearch ? "Close search" : "Open search"}
-              className="flex items-center justify-center cursor-pointer w-10 h-10 md:w-11 md:h-11  shrink-0 text-white hover:text-indigo-500 transition-colors"
+              className="flex items-center justify-center cursor-pointer w-10 h-10 md:w-11 md:h-11  shrink-0  dark:hover:text-indigo-500 transition-colors"
             >
               <FiSearch />
             </button>
@@ -150,7 +148,7 @@ export default function Header() {
              focus-visible:outline-none
              focus-visible:ring-0
              shadow-none
-             focus:shadow-none text-white placeholder:text-gray-400 min-w-0
+             focus:shadow-none dark:text-white placeholder:text-gray-400 min-w-0
              transition-opacity duration-200 ease-in-out
              ${openSearch ? "opacity-100 w-full ml-1 delay-150" : "opacity-0 w-0 pointer-events-none"}
            `}
@@ -172,25 +170,20 @@ export default function Header() {
           {/* Dark Mode */}
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="w-10 h-10 cursor-pointer md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-indigo-500 transition"
+            className="w-10 h-10 cursor-pointer md:w-11 md:h-11 rounded-full bg-indigo-500 dark:bg-[#111827] text-white flex items-center justify-center dark:hover:bg-[#1f2937] dark:hover:text-indigo-500 transition"
           >
             {darkMode ? <FiMoon  /> : <FiSun />}
           </button>
 
           {/* Wishlist */}
           <Link to="/wishlist"
-            className="relative w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-pink-500 transition">
+            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-indigo-500 dark:bg-[#111827] text-white flex items-center justify-center dark:hover:bg-[#1f2937] hover:text-pink-500 transition">
             <FiHeart />
-            {wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {wishlistCount > 9 ? '9+' : wishlistCount}
-              </span>
-            )}
           </Link>
 
           {/* Cart */}
           <Link to="/cart"
-            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111827] text-white flex items-center justify-center hover:bg-[#1f2937] hover:text-indigo-500 transition">
+            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-indigo-500 dark:bg-[#111827] text-white flex items-center justify-center dark:hover:bg-[#1f2937] dark:hover:text-indigo-500 transition">
             <FiShoppingCart />
           </Link>
 
