@@ -148,3 +148,140 @@ input:-webkit-autofill:active {
   caret-color: #0f172a !important;
   background-color: #ffffff !important;
 }
+
+
+
+.cart-page {
+  padding: 40px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+.cart-page h1 {
+  font-size: 32px;
+  margin-bottom: 30px;
+}
+.empty-cart {
+  background: white;
+  border-radius: 16px;
+  padding: 60px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.empty-cart h2 {
+  color: #374151;
+  margin-bottom: 10px;
+}
+.empty-cart p {
+  color: #6b7280;
+}
+.cart-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+}
+.cart-products {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.cart-item {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.cart-item img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+.cart-item div {
+  flex: 1;
+}
+.cart-item h3 {
+  margin-bottom: 10px;
+  color: #111827;
+}
+.cart-item p {
+  color: #6b7280;
+}
+.cart-item button {
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.cart-summary {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  height: fit-content;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.cart-summary h2 {
+  margin-bottom: 20px;
+}
+.cart-summary p {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+  color: #4b5563;
+}
+.cart-summary h3 {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+  margin-top: 20px;
+  font-size: 22px;
+}
+.coupon-box {
+  background: white;
+  margin-top: 25px;
+  padding: 25px;
+  border-radius: 16px;
+}
+.coupon-box h3 {
+  margin-bottom: 15px;
+}
+.coupon-input {
+  display: flex;
+  gap: 10px;
+}
+.coupon-input input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.coupon-input button {
+  background: #111827;
+  color: white;
+  border: none;
+  padding: 0 25px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.checkout-btn,
+.shopping-btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+.checkout-btn {
+  background: #111827;
+  color: white;
+  border: none;
+}
+.shopping-btn {
+  background: white;
+  border: 1px solid #111827;
+}
