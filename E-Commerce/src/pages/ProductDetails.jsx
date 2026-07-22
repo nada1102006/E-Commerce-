@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable no-unused-vars */
+
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import {
@@ -18,14 +17,15 @@ import {
   AlertCircle,
   Send,
   User,
-  Trash2,
 } from "lucide-react";
 import api from "../api/api";
+import { useCart } from "../context/CartContext"; // Imported useCart
 
 export default function ProductDetails() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const navigate = useNavigate();
+  const { addToCart } = useCart(); // Initialized useCart hook
 
   // --- States ---
   const [product, setProduct] = useState(null);
@@ -172,7 +172,7 @@ export default function ProductDetails() {
   }
 
   // ============================================
-  // ADD TO CART
+  // ADD TO CART (FIXED TO USE CONTEXT)
   // ============================================
   async function handleAddToCart(productId, qty = 1) {
     const targetId = productId || id;
@@ -180,10 +180,8 @@ export default function ProductDetails() {
 
     setAddingToCart(true);
     try {
-      await api.post("/cart", {
-        productId: targetId,
-        quantity: qty,
-      });
+      // Using the addToCart function from CartContext
+      await addToCart(targetId, qty);
       setCartSuccess(true);
       setTimeout(() => setCartSuccess(false), 2000);
     } catch (err) {
@@ -201,12 +199,10 @@ export default function ProductDetails() {
     if (!id) return;
     try {
       if (isWishlisted) {
-        // CORRECT: DELETE /wishlists/remove/{productId}
         await api.delete(`/wishlists/remove/${id}`);
         setIsWishlisted(false);
         setWishlistIds((prev) => prev.filter((wid) => wid !== id));
       } else {
-        // CORRECT: POST /wishlists/add/{productId}
         await api.post(`/wishlists/add/${id}`);
         setIsWishlisted(true);
         setWishlistIds((prev) => [...prev, id]);
@@ -354,15 +350,15 @@ export default function ProductDetails() {
   // RENDER
   // ============================================
   return (
-    <div className="min-h-screen bg-[#0B1120] text-gray-100 pb-20 pt-24">
+    <div className="min-h-screen dark:bg-[#0B1120] text-gray-100 pb-20 pt-24">
       {/* ===== BREADCRUMB ===== */}
       <div className="max-w-7xl mx-auto px-4 mb-6">
         <div className="text-sm text-gray-400 flex items-center gap-2">
-          <span className="hover:text-white cursor-pointer" onClick={() => navigate("/")}>
+          <span className="dark:hover:text-white cursor-pointer" onClick={() => navigate("/")}>
             Home
           </span>
           <span>/</span>
-          <span className="hover:text-white cursor-pointer" onClick={() => navigate("/shop")}>
+          <span className="dark:hover:text-white cursor-pointer" onClick={() => navigate("/shop")}>
             Shop
           </span>
           <span>/</span>
@@ -376,7 +372,7 @@ export default function ProductDetails() {
           {/* --- LEFT: IMAGE GALLERY --- */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative bg-[#1e293b] rounded-2xl overflow-hidden aspect-square group">
+            <div className="relative dark:bg-[#1e293b] rounded-2xl overflow-hidden aspect-square group">
               {discountPercent > 0 && (
                 <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
                   -{discountPercent}%
@@ -459,7 +455,7 @@ export default function ProductDetails() {
 
             {/* Title */}
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-2">
                 {product.name}
               </h1>
               <p className="text-gray-400">{product.shortDescription}</p>
@@ -501,14 +497,14 @@ export default function ProductDetails() {
 
             {/* SKU */}
             <div className="text-sm text-gray-500">
-              SKU: <span className="text-gray-300">{product.sku}</span>
+              SKU: <span className="text-gray-300 hover:text-gray-500 cursor-pointer">{product.sku}</span>
             </div>
 
             {/* Tags */}
             {product.tags?.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {product.tags.map((tag) => (
-                  <span key={tag} className="px-2 py-1 bg-gray-800 text-gray-400 text-xs rounded">
+                  <span key={tag} className="px-2 py-1 bg-gray-300 text-black dark:bg-gray-800 dark:text-gray-400 text-xs rounded">
                     #{tag}
                   </span>
                 ))}
@@ -518,12 +514,12 @@ export default function ProductDetails() {
             {/* Quantity + Buttons */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-4">
-                <span className="text-gray-400 text-sm">Quantity:</span>
-                <div className="flex items-center bg-[#1e293b] rounded-lg border border-gray-700">
+                <span className="text-gray-400 text-sm hover:text-gray-500 cursor-pointer">Quantity:</span>
+                <div className="flex items-center dark:bg-[#1e293b] rounded-lg dark:border border-gray-700 text-black dark:text-white">
                   <button
                     onClick={decreaseQuantity}
                     disabled={quantity <= 1}
-                    className="p-3 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-l-lg transition-colors"
+                    className="p-3 hover:bg-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-l-lg transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -531,7 +527,7 @@ export default function ProductDetails() {
                   <button
                     onClick={increaseQuantity}
                     disabled={quantity >= product.stock}
-                    className="p-3 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-r-lg transition-colors"
+                    className="p-3 hover:bg-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-r-lg transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -568,7 +564,7 @@ export default function ProductDetails() {
                   className={`p-3.5 rounded-xl border-2 transition-all ${
                     isWishlisted
                       ? "bg-red-500/10 border-red-500 text-red-500"
-                      : "border-gray-700 text-gray-400 hover:border-gray-500 hover:text-white"
+                      : "dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-white text-black"
                   }`}
                 >
                   <Heart className={`w-6 h-6 ${isWishlisted ? "fill-red-500" : ""}`} />
@@ -576,7 +572,7 @@ export default function ProductDetails() {
 
                 <button
                   onClick={handleShare}
-                  className="p-3.5 rounded-xl border-2 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-white transition-all"
+                  className="p-3.5 rounded-xl border-2 border-gray-700 text-gray-400 dark:hover:border-gray-500 dark:hover:text-white transition-all text-black"
                 >
                   <Share2 className="w-6 h-6" />
                 </button>
@@ -585,17 +581,17 @@ export default function ProductDetails() {
 
             {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-4 pt-4">
-              <div className="flex flex-col items-center text-center gap-2 p-4 bg-[#1e293b] rounded-xl">
+              <div className="flex flex-col bg-gray-50 items-center text-center gap-2 p-4 dark:bg-[#1e293b] rounded-xl">
                 <Truck className="w-6 h-6 text-indigo-400" />
-                <span className="text-xs text-gray-400">Fast Delivery</span>
+                <span className="text-xs text-black dark:text-gray-400">Fast Delivery</span>
               </div>
-              <div className="flex flex-col items-center text-center gap-2 p-4 bg-[#1e293b] rounded-xl">
+              <div className="flex flex-col bg-gray-50 items-center text-center gap-2 p-4 bg-[#1e293b] rounded-xl">
                 <ShieldCheck className="w-6 h-6 text-green-400" />
-                <span className="text-xs text-gray-400">Secure Payment</span>
+                <span className="text-xs text-black dark:text-gray-400">Secure Payment</span>
               </div>
-              <div className="flex flex-col items-center text-center gap-2 p-4 bg-[#1e293b] rounded-xl">
+              <div className="flex flex-col bg-gray-50 items-center text-center gap-2 p-4 bg-[#1e293b] rounded-xl">
                 <RotateCcw className="w-6 h-6 text-orange-400" />
-                <span className="text-xs text-gray-400">Easy Returns</span>
+                <span className="text-xs text-black dark:text-gray-400">Easy Returns</span>
               </div>
             </div>
           </div>
@@ -608,7 +604,7 @@ export default function ProductDetails() {
               <button
                 onClick={() => setActiveTab("description")}
                 className={`pb-4 text-sm font-medium capitalize transition-all relative ${
-                  activeTab === "description" ? "text-indigo-400" : "text-gray-500 hover:text-gray-300"
+                  activeTab === "description" ? "text-indigo-400" : "text-gray-500 dark:hover:text-gray-300"
                 }`}
               >
                 Description
@@ -619,7 +615,7 @@ export default function ProductDetails() {
               <button
                 onClick={() => setActiveTab("reviews")}
                 className={`pb-4 text-sm font-medium capitalize transition-all relative ${
-                  activeTab === "reviews" ? "text-indigo-400" : "text-gray-500 hover:text-gray-300"
+                  activeTab === "reviews" ? "text-indigo-400" : "text-gray-500 dark:hover:text-gray-300"
                 }`}
               >
                 Reviews ({reviews.length || 0})
@@ -634,28 +630,28 @@ export default function ProductDetails() {
             {/* --- DESCRIPTION --- */}
             {activeTab === "description" && (
               <div>
-                <p className="text-gray-300 leading-relaxed text-lg">
+                <p className="dark:text-gray-300 text-black leading-relaxed text-lg">
                   {product.description || "No description available."}
                 </p>
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-[#1e293b] p-6 rounded-xl">
-                    <h3 className="font-semibold text-white mb-3">Product Details</h3>
+                  <div className="bg-gray-100 dark:bg-[#1e293b] p-6 rounded-xl">
+                    <h3 className="font-semibold dark:text-white text-black mb-3">Product Details</h3>
                     <ul className="space-y-2 text-sm text-gray-400">
                       <li className="flex justify-between">
                         <span>Brand</span>
-                        <span className="text-white">{product.brand}</span>
+                        <span className="dark:text-white text-black">{product.brand}</span>
                       </li>
                       <li className="flex justify-between">
                         <span>Category</span>
-                        <span className="text-white">{product.category}</span>
+                        <span className="dark:text-white text-black">{product.category}</span>
                       </li>
                       <li className="flex justify-between">
                         <span>Subcategory</span>
-                        <span className="text-white">{product.subcategory}</span>
+                        <span className="dark:text-white text-black">{product.subcategory}</span>
                       </li>
                       <li className="flex justify-between">
                         <span>SKU</span>
-                        <span className="text-white">{product.sku}</span>
+                        <span className="dark:text-white text-black">{product.sku}</span>
                       </li>
                       <li className="flex justify-between">
                         <span>Stock</span>
@@ -665,8 +661,8 @@ export default function ProductDetails() {
                       </li>
                     </ul>
                   </div>
-                  <div className="bg-[#1e293b] p-6 rounded-xl">
-                    <h3 className="font-semibold text-white mb-3">Shipping Info</h3>
+                  <div className="bg-gray-100 dark:bg-[#1e293b] p-6 rounded-xl">
+                    <h3 className="font-semibold dark:text-white text-black mb-3">Shipping Info</h3>
                     <ul className="space-y-3 text-sm text-gray-400">
                       <li className="flex items-start gap-2">
                         <Truck className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
@@ -690,8 +686,8 @@ export default function ProductDetails() {
             {activeTab === "reviews" && (
               <div className="space-y-8">
                 {/* Write Review */}
-                <div className="bg-[#1e293b] rounded-2xl p-6 md:p-8">
-                  <h3 className="text-lg font-semibold text-white mb-6">Write a Review</h3>
+                <div className="dark:bg-[#1e293b] rounded-2xl p-6 md:p-8">
+                  <h3 className="text-lg font-semibold dark:text-white text-black mb-6">Write a Review</h3>
 
                   {reviewSuccess && (
                     <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-2 text-green-400">
@@ -741,7 +737,7 @@ export default function ProductDetails() {
                         onChange={(e) => setReviewComment(e.target.value)}
                         placeholder="Share your thoughts about this product..."
                         rows={4}
-                        className="w-full bg-[#0B1120] border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all"
+                        className="w-full dark:bg-[#0B1120] border border-gray-700 rounded-xl px-4 py-3 text-black dark:text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all"
                       />
                     </div>
 
@@ -769,14 +765,14 @@ export default function ProductDetails() {
                 <div className="space-y-4">
                   {reviews.length > 0 ? (
                     reviews.map((review) => (
-                      <div key={review._id || review.id} className="bg-[#1e293b] rounded-xl p-6">
+                      <div key={review._id || review.id} className="dark:bg-[#1e293b] rounded-xl p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center">
                               <User className="w-5 h-5 text-indigo-400" />
                             </div>
                             <div>
-                              <p className="font-medium text-white">
+                              <p className="font-medium text-black dark:text-white">
                                 {review.user?.name || review.user?.username || review.name || "Anonymous"}
                               </p>
                               <div className="flex items-center gap-2 mt-1">
@@ -818,7 +814,7 @@ export default function ProductDetails() {
         {/* ===== RELATED PRODUCTS ===== */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-white mb-8">Related Products</h2>
+            <h2 className="text-2xl font-bold text-black dark:text-white mb-8">Related Products</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((related) => {
@@ -830,10 +826,10 @@ export default function ProductDetails() {
                 return (
                   <div
                     key={related._id}
-                    className="bg-[#1e293b] rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all group"
+                    className="dark:bg-[#1e293b] rounded-2xl overflow-hidden border border-gray-300 dark:border-gray-800 dark:hover:border-gray-700 transition-all group"
                   >
                     {/* Image */}
-                    <div className="relative aspect-square bg-[#0B1120] p-6 overflow-hidden">
+                    <div className="relative aspect-square bg-stone-50 dark:bg-[#0B1120] p-6 overflow-hidden">
                       <span className="absolute top-3 left-3 z-10 px-2 py-1 bg-indigo-500/20 text-indigo-400 text-xs font-medium rounded-md">
                         {related.category}
                       </span>
@@ -867,7 +863,7 @@ export default function ProductDetails() {
                     {/* Info */}
                     <div className="p-4 space-y-3">
                       <Link to={`/product-details?id=${related._id}`}>
-                        <h3 className="font-medium text-white hover:text-indigo-400 transition-colors line-clamp-1">
+                        <h3 className="font-medium text-black dark:text-white dark:hover:text-indigo-400 transition-colors line-clamp-1">
                           {related.name}
                         </h3>
                       </Link>

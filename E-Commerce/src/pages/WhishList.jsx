@@ -149,12 +149,12 @@ export default function Wishlist() {
   // ============================================
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0B1120] text-white pt-28 px-4">
+      <div className="min-h-screen dark:bg-[#0B1120] text-white pt-28 px-4">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold mb-8">My Wishlist</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-[#1e293b] rounded-2xl h-[400px] animate-pulse"></div>
+              <div key={i} className="bg-[#1e253b] rounded-2xl h-[400px] animate-pulse"></div>
             ))}
           </div>
         </div>
@@ -183,12 +183,12 @@ export default function Wishlist() {
   // ============================================
   if (wishlistItems.length === 0) {
     return (
-      <div className="min-h-screen bg-[#0B1120] text-white pt-28 px-4">
+      <div className="min-h-screen dark:bg-[#0B1120] text-white pt-28 px-4">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold mb-8">My Wishlist</h1>
           <div className="text-center py-20">
             <Heart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Your Wishlist is Empty</h2>
+            <h2 className="text-xl font-semibold mb-2 text-black dark:text-white">Your Wishlist is Empty</h2>
             <p className="text-gray-400 mb-6">
               Save items you love to your wishlist and buy them later.
             </p>
@@ -205,11 +205,11 @@ export default function Wishlist() {
   }
   // ============================================
   return (
-    <div className="min-h-screen bg-[#0B1120] text-gray-100 pb-20 pt-24">
+    <div className="min-h-screen dark:bg-[#0B1120] text-gray-100 pb-20 pt-24">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-white">My Wishlist</h1>
+          <h1 className="text-2xl font-bold text-black dark:text-white">My Wishlist</h1>
           <span className="text-gray-400">{wishlistItems.length} items</span>
         </div>
 
@@ -229,10 +229,10 @@ export default function Wishlist() {
             return (
               <div
                 key={productId}
-                className="bg-[#1e293b] rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all group"
+                className="dark:bg-[#1e293b] rounded-2xl overflow-hidden border border-gray-300 dark:border dark:border-gray-800 dark:hover:border-gray-700 transition-all group"
               >
                 {/* Image */}
-                <div className="relative aspect-square bg-[#0B1120] p-6 overflow-hidden">
+                <div className="relative aspect-square bg-stone-50 dark:bg-[#0B1120] p-6 overflow-hidden">
                   {/* Category Badge */}
                   {product.category && (
                     <span className="absolute top-3 left-3 z-10 px-2 py-1 bg-indigo-500/20 text-indigo-400 text-xs font-medium rounded-md">
@@ -273,7 +273,7 @@ export default function Wishlist() {
                 {/* Info */}
                 <div className="p-4 space-y-3">
                   <Link to={`/product-details?id=${productId}`}>
-                    <h3 className="font-medium text-white hover:text-indigo-400 transition-colors line-clamp-1">
+                    <h3 className="font-medium text-black dark:text-white hover:text-indigo-400 transition-colors line-clamp-1">
                       {product.name}
                     </h3>
                   </Link>

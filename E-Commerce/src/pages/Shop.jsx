@@ -37,28 +37,18 @@ export default function Shop() {
     try {
       const params = {
         page: 1,
-        limit: 100, // Increased limit to allow frontend filtering to work well
+        limit: 20,
       };
 
       if (searchQuery) params.search = searchQuery;
       if (category !== "All") params.category = category.toLowerCase();
+      if (minPrice) params.minPrice = minPrice;
+      if (maxPrice) params.maxPrice = maxPrice;
       if (sort) params.sort = sort;
 
       const { data } = await api.get("/products", { params });
       if (data.success) {
-        let fetchedProducts = data.products || [];
-        
-        // Filter locally based on the price AFTER discount
-        if (minPrice || maxPrice) {
-          fetchedProducts = fetchedProducts.filter(product => {
-            const newPrice = product.price - (product.discountPrice || 0);
-            const min = minPrice ? Number(minPrice) : 0;
-            const max = maxPrice ? Number(maxPrice) : Infinity;
-            return newPrice >= min && newPrice <= max;
-          });
-        }
-        
-        setProducts(fetchedProducts);
+        setProducts(data.products || []);
       }
     } catch (error) {
       toast.error("Failed to fetch products");
@@ -173,7 +163,7 @@ export default function Shop() {
 
   return (
     <div className="min-h-screen bg-white py-6 dark:bg-slate-950 w-full">
-
+      
       <div className="w-full px-4 sm:px-8 md:px-12">
         
         {/* Search and Mobile Filter Toggle */}
@@ -185,17 +175,8 @@ export default function Shop() {
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-10 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm bg-white dark:bg-slate-950 dark:text-white dark:border-slate-800"
+              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm bg-white dark:bg-slate-950"
             />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                aria-label="Clear search"
-              >
-                <FiX className="text-lg" />
-              </button>
-            )}
           </div>
           <button 
             onClick={() => setShowMobileFilters(true)}
@@ -229,7 +210,7 @@ export default function Shop() {
 
             <div className="space-y-8">
               <div>
-                <h3 className="font-semibold text-lg text-gray-800 mb-4">Category</h3>
+                <h3 className="font-semibold text-lg text-gray-800 mb-4 dark:text-white">Category</h3>
                 <div className="space-y-3">
                   {categories.map((cat) => (
                     <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
@@ -239,36 +220,36 @@ export default function Shop() {
                         value={cat}
                         checked={category === cat}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 "
                       />
-                      <span className="text-gray-600 group-hover:text-gray-900">{cat}</span>
+                      <span className="text-gray-600 hover:text-gray-500 dark:text-white">{cat}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h3 className="font-semibold text-lg text-gray-800 mb-4">Price Range</h3>
+                <h3 className="font-semibold text-lg text-gray-800 mb-4 dark:text-white">Price Range</h3>
                 <div className="flex items-center gap-3">
                   <input
                     type="number"
                     placeholder="Min"
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-black dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                   <input
                     type="number"
                     placeholder="Max"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                 </div>
               </div>
 
               <div>
-                <h3 className="font-semibold text-lg text-gray-800 mb-4">Sort By</h3>
+                <h3 className="font-semibold text-lg text-gray-800 mb-4 dark:text-white">Sort By</h3>
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
