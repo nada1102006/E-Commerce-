@@ -585,11 +585,11 @@ export default function ProductDetails() {
                 <Truck className="w-6 h-6 text-indigo-400" />
                 <span className="text-xs text-black dark:text-gray-400">Fast Delivery</span>
               </div>
-              <div className="flex flex-col bg-gray-50 items-center text-center gap-2 p-4 bg-[#1e293b] rounded-xl">
+              <div className="flex flex-col bg-gray-50 items-center text-center gap-2 p-4 dark:bg-[#1e293b] rounded-xl">
                 <ShieldCheck className="w-6 h-6 text-green-400" />
                 <span className="text-xs text-black dark:text-gray-400">Secure Payment</span>
               </div>
-              <div className="flex flex-col bg-gray-50 items-center text-center gap-2 p-4 bg-[#1e293b] rounded-xl">
+              <div className="flex flex-col bg-gray-50 items-center text-center gap-2 p-4 dark:bg-[#1e293b] rounded-xl">
                 <RotateCcw className="w-6 h-6 text-orange-400" />
                 <span className="text-xs text-black dark:text-gray-400">Easy Returns</span>
               </div>
