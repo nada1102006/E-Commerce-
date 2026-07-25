@@ -33,22 +33,16 @@ export default function Layout() {
             JSON.stringify(response.data.user.username || "_"),
           );
           localStorage.setItem("isLogin", JSON.stringify(true));
-
-          // تحديث Header عن طريق إرسال حدث
+          
           window.dispatchEvent(new Event("storage"));
-
-          setTimeout(() => {
-            navigate("/profile");
-          }, 500);
+          
+        
         }
       } else {
         localStorage.removeItem("isLogin");
         localStorage.removeItem("username");
         localStorage.removeItem("userToken");
         localStorage.removeItem("user");
-        setTimeout(() => {
-          navigate("/login");
-        }, 500);
       }
     } catch (error) {
       setIsError(true);
@@ -57,9 +51,6 @@ export default function Layout() {
       localStorage.removeItem("userToken");
       localStorage.removeItem("user");
       toast.error(error.response?.data?.message || "Failed. Please try again.");
-      setTimeout(() => {
-        navigate("/login");
-      }, 500);
       console.error("Error:", error);
     } finally {
       setLoading(false);
