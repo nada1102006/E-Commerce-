@@ -195,7 +195,7 @@ function CheckOut() {
   };
 
   return (
-    <section className="checkout relative min-h-[100vh] bg-slate-100 dark:bg-slate-950 pt-24 sm:pt-28 pb-20">
+    <section className="checkout relative min-h-[100vh] bg-white dark:bg-[#070B1A] pt-24 sm:pt-28 pb-20">
       <div className="px-3 min-[450px]:px-6">
         <ToastContainer
           position="top-center"
@@ -403,9 +403,9 @@ function CheckOut() {
                 </h3>
 
                 {loadingCart ? (
-                  <div className="w-full flex flex-col justify-center items-center gap-1 min-[450px]:gap-2 py-4 min-[450px]:py-8">
-                    <LuLoaderCircle className="text-3xl min-[450px]:text-5xl text-indigo-500 animate-spin" />
-                    <span className="capitalize text-sm min-[450px]:text-lg text-slate-500">
+                  <div className="w-full flex flex-col justify-center items-center gap-3 py-6 min-[450px]:py-8">
+                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600/20 border-t-indigo-600"></div>
+                    <span className="capitalize text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
                       Loading cart items...
                     </span>
                   </div>

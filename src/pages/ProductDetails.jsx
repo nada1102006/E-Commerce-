@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation, useParams, Link } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -24,22 +24,34 @@ import { toast, ToastContainer } from "react-toastify";
 
 export default function ProductDetails() {
   const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+  const { id: paramId } = useParams();
+  const id = paramId || searchParams.get("id");
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const location = useLocation();
+  const { addToCart, cart } = useCart();
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const isInCart = (productId) => {
+    const targetId = productId || id;
+    if (!targetId || !cart?.items) return false;
+    return cart.items.some((item) => {
+      const pId = item.product?._id || item.product || item.id || item._id;
+      return String(pId) === String(targetId);
+    });
+  };
+
+  const initialProduct = location.state?.product || null;
+  const [product, setProduct] = useState(initialProduct);
+  const [loading, setLoading] = useState(!initialProduct);
   const [error, setError] = useState(null);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlistedState, setIsWishlistedState] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
   const [addingToCart, setAddingToCart] = useState(false);
   const [cartSuccess, setCartSuccess] = useState(false);
 
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(initialProduct?.reviews || []);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewHoverRating, setReviewHoverRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
@@ -51,6 +63,9 @@ export default function ProductDetails() {
   const [relatedLoading, setRelatedLoading] = useState(false);
 
   const [wishlistIds, setWishlistIds] = useState([]);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [relatedWishlistLoading, setRelatedWishlistLoading] = useState({});
+  const [relatedAddingToCart, setRelatedAddingToCart] = useState({});
 
   useEffect(() => {
     if (!id) {
@@ -61,15 +76,21 @@ export default function ProductDetails() {
 
     async function fetchProduct() {
       try {
-        setLoading(true);
+        if (!initialProduct) setLoading(true);
         const response = await api.get(`/products/${id}`);
-        const prod = response.data.product;
-        setProduct(prod);
-        setReviews(prod.reviews || []);
-        setError(null);
+        const prod = response.data?.product || response.data?.data || response.data;
+        if (prod && (prod._id || prod.id || prod.name)) {
+          setProduct(prod);
+          setReviews(prod.reviews || []);
+          setError(null);
+        } else if (!initialProduct) {
+          setError("Product not found");
+        }
       } catch (err) {
         console.error("Fetch product error:", err);
-        setError("Failed to load product. Please try again.");
+        if (!initialProduct) {
+          setError(err.response?.data?.message || "Failed to load product. Please try again.");
+        }
       } finally {
         setLoading(false);
       }
@@ -84,56 +105,79 @@ export default function ProductDetails() {
     async function fetchRelated() {
       try {
         setRelatedLoading(true);
-        const response = await api.get(`/products?category=${product.category}&limit=8`);
-        const filtered = response.data.products.filter((p) => p._id !== product._id);
-        setRelatedProducts(filtered.slice(0, 4));
+        const response = await api.get(`/products?category=${encodeURIComponent(product.category)}&limit=8`);
+        const list = response.data?.products || response.data?.data || (Array.isArray(response.data) ? response.data : []);
+        if (Array.isArray(list)) {
+          const filtered = list.filter((p) => (p._id || p.id) !== (product._id || product.id));
+          setRelatedProducts(filtered.slice(0, 4));
+        }
       } catch (err) {
-        console.error("Related products error:", err);
+        console.error("Fetch related error:", err);
       } finally {
         setRelatedLoading(false);
       }
     }
 
+    fetchRelated();
+  }, [product?.category, product?._id]);
+
+  useEffect(() => {
     async function fetchWishlist() {
+      const token = localStorage.getItem("userToken") || localStorage.getItem("token");
+      if (!token) return;
+
       try {
         const response = await api.get("/wishlists/my");
-        const wishlist = response.data.wishlist || response.data.wishlist?.products || [];
-        const items = Array.isArray(wishlist)
-          ? wishlist
-          : Array.isArray(response.data.wishlist?.products)
-          ? response.data.wishlist.products
-          : [];
-        const ids = items.map((item) => {
-          if (typeof item === "string") return item;
-          if (item.productId?._id) return item.productId._id;
-          if (item.productId) return item.productId;
-          if (item.product?._id) return item.product._id;
-          if (item.product) return item.product;
-          if (item._id) return item._id;
-          return null;
-        }).filter(Boolean);
-        setWishlistIds(ids);
-        setIsWishlisted(ids.includes(id));
+        if (response.data.success) {
+          const list = response.data.wishlist?.products || response.data.wishlist?.items || [];
+          const ids = list.map((p) => (typeof p === "string" ? p : p._id || p.id));
+          setWishlistIds(ids);
+          setIsWishlistedState(ids.includes(id));
+        }
       } catch (err) {
-        console.error("Wishlist fetch error:", err);
+        console.error("Fetch wishlist error:", err);
       }
     }
 
-    fetchRelated();
     fetchWishlist();
-  }, [product, id]);
+  }, [id]);
+
+  const isWishlistedInState = wishlistIds.includes(id);
+  const isWishlisted = isWishlistedInState || isWishlistedState;
+
+  function formatDate(dateString) {
+    if (!dateString) return "Recently";
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return "Recently";
+      return d.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return "Recently";
+    }
+  }
 
   function getDiscount(price, discountPrice) {
-    if (!discountPrice || discountPrice >= price) return 0;
+    if (!discountPrice || discountPrice >= price || price <= 0) return 0;
     return Math.round(((price - discountPrice) / price) * 100);
   }
 
-  function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+  const productImages = (() => {
+    if (!product?.images || !Array.isArray(product.images) || product.images.length === 0) {
+      return [{ url: product?.image || "https://placehold.co/600x600/e2e8f0/64748b?text=No+Image" }];
+    }
+    return product.images.map((img) => {
+      if (typeof img === "string") return { url: img };
+      if (img?.url) return img;
+      return { url: "https://placehold.co/600x600/e2e8f0/64748b?text=No+Image" };
     });
+  })();
+
+  function setSelectedImageIndex(index) {
+    setSelectedImage(index);
   }
 
   function nextImage() {
@@ -158,32 +202,44 @@ export default function ProductDetails() {
     const targetId = productId || id;
     if (!targetId) return;
 
-    setAddingToCart(true);
+    if (productId) {
+      setRelatedAddingToCart((prev) => ({ ...prev, [productId]: true }));
+    } else {
+      setAddingToCart(true);
+    }
+
     try {
       await addToCart(targetId, qty);
-      setCartSuccess(true);
+      if (!productId) {
+        setCartSuccess(true);
+        setTimeout(() => setCartSuccess(false), 2000);
+      }
       toast.success("Added to cart successfully!");
-      setTimeout(() => setCartSuccess(false), 2000);
     } catch (err) {
       console.error("Add to cart error:", err);
       toast.error(err.response?.data?.message || "Failed to add to cart. Please try again.");
     } finally {
-      setAddingToCart(false);
+      if (productId) {
+        setRelatedAddingToCart((prev) => ({ ...prev, [productId]: false }));
+      } else {
+        setAddingToCart(false);
+      }
     }
   }
 
   async function toggleWishlist() {
-    if (!id) return;
+    if (!id || wishlistLoading) return;
+    setWishlistLoading(true);
     try {
       if (isWishlisted) {
         await api.delete(`/wishlists/remove/${id}`);
-        setIsWishlisted(false);
+        setIsWishlistedState(false);
         setWishlistIds((prev) => prev.filter((wid) => wid !== id));
         toast.info("Removed from wishlist");
         window.dispatchEvent(new CustomEvent("wishlist-updated", { detail: { action: "remove" } }));
       } else {
         await api.post(`/wishlists/add/${id}`);
-        setIsWishlisted(true);
+        setIsWishlistedState(true);
         setWishlistIds((prev) => [...prev, id]);
         toast.success("Added to wishlist!");
         window.dispatchEvent(new CustomEvent("wishlist-updated", { detail: { action: "add" } }));
@@ -191,14 +247,17 @@ export default function ProductDetails() {
     } catch (err) {
       console.error("Wishlist error:", err);
       toast.error(err.response?.data?.message || "Please login to use wishlist.");
+    } finally {
+      setWishlistLoading(false);
     }
   }
 
   async function toggleRelatedWishlist(e, productId) {
     e.preventDefault();
     e.stopPropagation();
-    if (!productId) return;
+    if (!productId || relatedWishlistLoading[productId]) return;
 
+    setRelatedWishlistLoading((prev) => ({ ...prev, [productId]: true }));
     const isInWishlist = wishlistIds.includes(productId);
     try {
       if (isInWishlist) {
@@ -215,6 +274,8 @@ export default function ProductDetails() {
     } catch (err) {
       console.error("Related wishlist error:", err);
       toast.error(err.response?.data?.message || "Please login to use wishlist.");
+    } finally {
+      setRelatedWishlistLoading((prev) => ({ ...prev, [productId]: false }));
     }
   }
 
@@ -345,17 +406,10 @@ export default function ProductDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0B1120] text-white pt-12 sm:pt-16 px-4">
-        <div className="max-w-7xl mx-auto animate-pulse">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="bg-[#1e293b] rounded-2xl h-[500px]"></div>
-            <div className="space-y-4">
-              <div className="h-8 bg-[#1e293b] rounded w-3/4"></div>
-              <div className="h-6 bg-[#1e293b] rounded w-1/4"></div>
-              <div className="h-4 bg-[#1e293b] rounded w-full"></div>
-              <div className="h-12 bg-[#1e293b] rounded w-1/3 mt-8"></div>
-            </div>
-          </div>
+      <div className="min-h-screen flex flex-col justify-center items-center bg-white dark:bg-[#070B1A] text-gray-900 dark:text-white pt-14 sm:pt-16 pb-16 px-4">
+        <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600/20 border-t-indigo-600"></div>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading product details...</p>
         </div>
       </div>
     );
@@ -363,13 +417,13 @@ export default function ProductDetails() {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-[#0B1120] text-white flex items-center justify-center px-4 pt-12 sm:pt-16">
+      <div className="min-h-screen bg-white dark:bg-[#0B1120] text-gray-900 dark:text-white flex items-center justify-center px-4 pt-12 sm:pt-16">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">{error || "Product not found"}</h2>
           <button
             onClick={() => navigate("/shop")}
-            className="mt-4 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+            className="mt-4 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-white"
           >
             Back to Shop
           </button>
@@ -385,11 +439,20 @@ export default function ProductDetails() {
   const discountPercent = hasDiscount && originalPrice > 0
     ? Math.round(((originalPrice - salePrice) / originalPrice) * 100)
     : 0;
-  const outOfStock = product.stock === 0;
-  const lowStock = product.stock > 0 && product.stock <= 5;
+  const stockCount = typeof product.stock === "number"
+    ? product.stock
+    : typeof product.quantity === "number"
+    ? product.quantity
+    : typeof product.countInStock === "number"
+    ? product.countInStock
+    : typeof product.inStock === "number"
+    ? product.inStock
+    : product.stock ? Number(product.stock) : 0;
+  const outOfStock = stockCount <= 0;
+  const lowStock = stockCount > 0 && stockCount <= 5;
 
   return (
-    <div className="min-h-screen dark:bg-[#0B1120] text-gray-100 pb-20 pt-12 sm:pt-16">
+    <div className="min-h-screen dark:bg-[#070B1A] text-gray-100 pb-20 pt-12 sm:pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
         <div className="text-xs sm:text-sm text-gray-400 flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <span className="dark:hover:text-white cursor-pointer" onClick={() => navigate("/")}>
@@ -422,12 +485,12 @@ export default function ProductDetails() {
               )}
 
               <img
-                src={product.images[selectedImage]?.url}
+                src={productImages[selectedImage]?.url || productImages[0]?.url}
                 alt={product.name}
                 className="w-full h-full object-contain p-8 transition-transform duration-500 group-hover:scale-105"
               />
 
-              {product.images.length > 1 && (
+              {productImages.length > 1 && (
                 <>
                   <button
                     onClick={prevImage}
@@ -445,13 +508,13 @@ export default function ProductDetails() {
               )}
 
               <div className="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-full text-sm">
-                {selectedImage + 1} / {product.images.length}
+                {selectedImage + 1} / {productImages.length}
               </div>
             </div>
 
-            {product.images.length > 1 && (
+            {productImages.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
-                {product.images.map((img, index) => (
+                {productImages.map((img, index) => (
                   <button
                     key={img.public_id || index}
                     onClick={() => setSelectedImage(index)}
@@ -486,7 +549,7 @@ export default function ProductDetails() {
             </div>
 
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-2">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-black dark:text-white mb-2 leading-tight">
                 {product.name}
               </h1>
               <p className="text-gray-400">{product.shortDescription}</p>
@@ -498,29 +561,32 @@ export default function ProductDetails() {
                   <Star
                     key={star}
                     className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                      star <= Math.round(product.averageRating || 0)
+                      star <= Math.round(product.averageRating || product.ratingsAverage || product.rating || 0)
                         ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-600"
+                        : "text-gray-300 dark:text-gray-600"
                     }`}
                   />
                 ))}
               </div>
               <span className="text-gray-400 text-xs sm:text-sm">({product.numReviews || 0} reviews)</span>
-              {!outOfStock && (
-                <span className="text-green-400 text-xs sm:text-sm font-medium">In Stock</span>
-              )}
-              {outOfStock && (
-                <span className="text-red-400 text-xs sm:text-sm font-medium">Out of Stock</span>
+              {!outOfStock ? (
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-semibold border border-emerald-500/20">
+                  In Stock ({stockCount} available)
+                </span>
+              ) : (
+                <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 text-xs sm:text-sm font-semibold border border-red-500/20">
+                  Out of Stock
+                </span>
               )}
             </div>
 
             <div className="flex items-baseline gap-3 py-3 border-y border-gray-800">
-              <span className="text-2xl sm:text-3xl font-bold text-indigo-400">EGP {finalPrice}</span>
+              <span className="text-xl sm:text-2xl font-bold text-indigo-400">EGP {finalPrice}</span>
               {hasDiscount && (
-                <span className="text-base sm:text-lg text-gray-500 line-through">EGP {product.price}</span>
+                <span className="text-xs sm:text-sm text-gray-500 line-through">EGP {product.price}</span>
               )}
               {hasDiscount && (
-                <span className="text-xs sm:text-sm text-red-400 font-medium">-{discountPercent}%</span>
+                <span className="text-xs text-red-400 font-medium">-{discountPercent}%</span>
               )}
             </div>
 
@@ -528,7 +594,7 @@ export default function ProductDetails() {
               SKU: <span className="text-gray-300 hover:text-gray-500 cursor-pointer">{product.sku}</span>
             </div>
 
-            {product.tags?.length > 0 && (
+            {Array.isArray(product.tags) && product.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {product.tags.map((tag) => (
                   <span key={tag} className="px-2 py-1 bg-gray-300 text-black dark:bg-gray-800 dark:text-gray-400 text-xs rounded">
@@ -552,28 +618,39 @@ export default function ProductDetails() {
                   <span className="w-10 sm:w-12 text-center font-semibold text-base sm:text-lg">{quantity}</span>
                   <button
                     onClick={increaseQuantity}
-                    disabled={quantity >= product.stock}
+                    disabled={quantity >= stockCount}
                     className="p-2.5 sm:p-3 hover:bg-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-r-lg transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                {lowStock && !outOfStock && (
-                  <span className="text-orange-400 text-xs sm:text-sm font-medium">Only {product.stock} left</span>
+                {!outOfStock && (
+                  <span className="text-emerald-400 text-xs sm:text-sm font-medium">
+                    {stockCount} in stock
+                  </span>
                 )}
               </div>
 
               <div className="flex flex-col min-[360px]:flex-row gap-2.5 sm:gap-3">
                 <button
                   onClick={() => handleAddToCart()}
-                  disabled={outOfStock || addingToCart}
+                  disabled={outOfStock || addingToCart || isInCart(id)}
                   className={`w-full min-[360px]:flex-1 flex items-center justify-center gap-2 py-3 sm:py-3.5 px-3 rounded-xl font-semibold text-xs min-[360px]:text-sm sm:text-base md:text-lg transition-all ${
-                    cartSuccess
+                    isInCart(id)
+                      ? "bg-emerald-600 dark:bg-emerald-700 text-white cursor-not-allowed opacity-90"
+                      : cartSuccess
                       ? "bg-green-600 hover:bg-green-700 text-white"
                       : "bg-indigo-600 hover:bg-indigo-700 text-white"
-                  } disabled:bg-gray-700 disabled:cursor-not-allowed disabled:text-gray-500`}
+                  } disabled:bg-gray-700 disabled:cursor-not-allowed disabled:text-gray-400`}
                 >
-                  {cartSuccess ? (
+                  {addingToCart ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  ) : isInCart(id) ? (
+                    <>
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                      <span className="truncate">Already in Cart</span>
+                    </>
+                  ) : cartSuccess ? (
                     <>
                       <Check className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" /> <span className="truncate">Added to Cart!</span>
                     </>
@@ -588,6 +665,7 @@ export default function ProductDetails() {
                 <div className="flex gap-2 shrink-0 justify-end">
                   <button
                     onClick={toggleWishlist}
+                    disabled={wishlistLoading}
                     aria-label="Wishlist"
                     className={`p-3 sm:p-3.5 rounded-xl border flex items-center justify-center transition-all flex-1 min-[360px]:flex-none ${
                       isWishlisted
@@ -595,7 +673,11 @@ export default function ProductDetails() {
                         : "bg-white dark:bg-slate-800/80 border-gray-300 dark:border-gray-700 text-slate-700 dark:text-gray-300 hover:border-pink-500 dark:hover:border-pink-500 hover:text-pink-500 dark:hover:text-pink-400 shadow-sm"
                     }`}
                   >
-                    <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${isWishlisted ? "fill-red-500" : ""}`} />
+                    {wishlistLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-red-500 border-t-transparent"></div>
+                    ) : (
+                      <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${isWishlisted ? "fill-red-500" : ""}`} />
+                    )}
                   </button>
 
                   <button
@@ -879,13 +961,18 @@ export default function ProductDetails() {
 
                       <button
                         onClick={(e) => toggleRelatedWishlist(e, related._id)}
+                        disabled={relatedWishlistLoading[related._id]}
                         className={`absolute top-3 right-3 z-10 p-1.5 rounded-full transition-all ${
                           isRelWishlisted
                             ? "bg-red-500/20 text-red-500"
                             : "bg-gray-800/80 text-gray-400 hover:text-red-500"
                         }`}
                       >
-                        <Heart className={`w-4 h-4 ${isRelWishlisted ? "fill-red-500" : ""}`} />
+                        {relatedWishlistLoading[related._id] ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-500 border-t-transparent"></div>
+                        ) : (
+                          <Heart className={`w-4 h-4 ${isRelWishlisted ? "fill-red-500" : ""}`} />
+                        )}
                       </button>
 
                       <Link to={`/product-details?id=${related._id}`}>
@@ -910,9 +997,9 @@ export default function ProductDetails() {
                             <Star
                               key={star}
                               className={`w-3.5 h-3.5 ${
-                                star <= Math.round(related.averageRating || 0)
+                                star <= Math.round(related.averageRating || related.ratingsAverage || related.rating || 0)
                                   ? "text-yellow-400 fill-yellow-400"
-                                  : "text-gray-600"
+                                  : "text-gray-300 dark:text-gray-600"
                               }`}
                             />
                           ))}
@@ -929,11 +1016,27 @@ export default function ProductDetails() {
 
                       <button
                         onClick={() => handleAddToCart(related._id, 1)}
-                        disabled={related.stock === 0}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed rounded-xl text-sm font-medium transition-all"
+                        disabled={related.stock === 0 || relatedAddingToCart[related._id] || isInCart(related._id)}
+                        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all text-white ${
+                          isInCart(related._id)
+                            ? "bg-emerald-600 dark:bg-emerald-700 cursor-not-allowed opacity-90"
+                            : "bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+                        }`}
                       >
-                        <ShoppingCart className="w-4 h-4" />
-                        {related.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                        {relatedAddingToCart[related._id] ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        ) : isInCart(related._id) ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <ShoppingCart className="w-4 h-4" />
+                        )}
+                        {related.stock === 0
+                          ? "Out of Stock"
+                          : relatedAddingToCart[related._id]
+                          ? "Adding..."
+                          : isInCart(related._id)
+                          ? "In Cart"
+                          : "Add to Cart"}
                       </button>
                     </div>
                   </div>

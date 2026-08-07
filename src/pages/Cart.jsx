@@ -9,7 +9,7 @@ const Cart = () => {
 
   if (!cart?.items || cart.items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-center items-center px-4 pt-24 pb-16">
+      <div className="min-h-screen bg-white dark:bg-[#070B1A] text-slate-900 dark:text-slate-100 flex flex-col justify-center items-center px-4 pt-24 pb-16">
         <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-8 sm:p-12 text-center max-w-md w-full shadow-sm">
           <div className="w-20 h-20 bg-indigo-500/10 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingCart className="w-10 h-10" />
@@ -33,7 +33,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen pt-12 sm:pt-16 pb-16 px-3 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="bg-white dark:bg-[#070B1A] text-slate-900 dark:text-slate-100 min-h-screen pt-12 sm:pt-16 pb-16 px-3 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div>

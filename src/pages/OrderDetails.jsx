@@ -170,15 +170,17 @@ export default function OrderDetails() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 dark:bg-slate-950 pt-24 sm:pt-28 pb-16 px-4">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
-        <p className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Loading Order Details...</p>
+      <div className="min-h-screen flex flex-col justify-center items-center bg-white dark:bg-[#070B1A] pt-14 sm:pt-16 pb-16 px-4">
+        <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600/20 border-t-indigo-600"></div>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading Order Details...</p>
+        </div>
       </div>
     );
 
   if (error || !order)
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 dark:bg-slate-950 pt-24 sm:pt-28 pb-16 px-4">
+      <div className="min-h-screen flex flex-col justify-center items-center bg-white dark:bg-[#070B1A] pt-14 sm:pt-16 pb-16 px-4">
         <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-8 text-center max-w-md w-full shadow-sm">
           <p className="text-red-500 font-bold mb-4">{error || "Order not found"}</p>
           <Link
@@ -192,7 +194,7 @@ export default function OrderDetails() {
     );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-950 transition-colors pt-24 sm:pt-28 pb-16 px-3 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-[#070B1A] transition-colors pt-14 sm:pt-16 lg:pt-18 pb-16 px-3 sm:px-6 lg:px-8">
       <main className="flex-1 max-w-4xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">

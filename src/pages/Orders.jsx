@@ -40,14 +40,17 @@ export default function Orders() {
     status ? status.charAt(0).toUpperCase() + status.slice(1) : "";
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900 transition-colors pt-12 sm:pt-16 pb-16">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-[#070B1A] transition-colors pt-12 sm:pt-16 pb-16">
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-6">
           My Orders
         </h1>
 
         {loading && (
-          <p className="text-slate-500 dark:text-slate-400">Loading...</p>
+          <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600/20 border-t-indigo-600"></div>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading your orders...</p>
+          </div>
         )}
         {error && <p className="text-red-500">{error}</p>}
 

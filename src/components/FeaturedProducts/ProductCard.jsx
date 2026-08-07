@@ -1,17 +1,48 @@
 
-import { Link } from 'react-router-dom';
-import { FiHeart, FiShoppingCart } from 'react-icons/fi';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiHeart, FiShoppingCart, FiCheck } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 import { getDiscountPercent, getFinalPrice, hasDiscount } from '../../utils/product';
-import { useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 
-export default function ProductCard({ product, isDarkMode, isFavorite, toggleFavorite }) {
+export default function ProductCard({ product, isDarkMode, isFavorite, isFavoriteLoading, toggleFavorite }) {
     const navigate = useNavigate();
+    const { addToCart, cart } = useCart();
+    const [addingToCart, setAddingToCart] = useState(false);
+
+    const productId = product?._id || product?.id;
     const imageUrl = product?.images?.[0]?.url;
     const price = Number(product?.price || 0);
     const finalPrice = getFinalPrice(product);
     const discounted = hasDiscount(product);
     const discountPercent = getDiscountPercent(product);
     const outOfStock = product?.stock <= 0;
+
+    const isInCart = (pId) => {
+        if (!pId || !cart?.items) return false;
+        return cart.items.some((item) => {
+            const id = item.product?._id || item.product || item.id || item._id;
+            return String(id) === String(pId);
+        });
+    };
+
+    const handleAddToCart = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!productId || addingToCart || isInCart(productId) || outOfStock) return;
+
+        try {
+            setAddingToCart(true);
+            await addToCart(productId, 1);
+            toast.success("Added to cart successfully!");
+        } catch (err) {
+            console.error("Add to cart error:", err);
+            toast.error(err.response?.data?.message || "Failed to add to cart.");
+        } finally {
+            setAddingToCart(false);
+        }
+    };
 
     return (
         <div
@@ -58,14 +89,19 @@ export default function ProductCard({ product, isDarkMode, isFavorite, toggleFav
 
                     <button
                         type="button"
+                        disabled={isFavoriteLoading}
                         onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
-                            toggleFavorite(product?._id);
+                            toggleFavorite();
                         }}
                         className={`absolute bottom-4 right-4 rounded-full p-2.5 shadow-lg transition ${isDarkMode ? 'bg-slate-900/80 text-slate-100' : 'bg-white/90 text-slate-700'} ${isFavorite ? 'text-danger-500' : ''}`}
                     >
-                        <FiHeart size={16} className={isFavorite ? 'fill-current' : ''} />
+                        {isFavoriteLoading ? (
+                            <div className="h-4 w-4 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                        ) : (
+                            <FiHeart size={16} className={isFavorite ? 'fill-current' : ''} />
+                        )}
                     </button>
                 </div>
 
@@ -86,7 +122,6 @@ export default function ProductCard({ product, isDarkMode, isFavorite, toggleFav
 
                     <div className="mb-4 flex items-center justify-between">
                         <div>
-                            {/* <p className="text-lg font-bold text-primary-500">${finalPrice}</p> */}
                             <p className="flex items-end gap-2">
                                 <span className="text-3xl md:text-4xl font-black tracking-tight text-primary-500">
                                     {Number(finalPrice).toLocaleString("en-US", {
@@ -111,14 +146,33 @@ export default function ProductCard({ product, isDarkMode, isFavorite, toggleFav
                                 </p>
                             )}
                         </div>
-                        <div className={`rounded-full p-2.5 ${isDarkMode ? 'bg-slate-800 text-slate-100' : 'bg-slate-100 text-slate-700'}`}>
-                            <FiShoppingCart size={16} />
-                        </div>
+
+                        <button
+                            type="button"
+                            disabled={outOfStock || addingToCart || isInCart(productId)}
+                            onClick={handleAddToCart}
+                            title={isInCart(productId) ? "Already in Cart" : "Add to Cart"}
+                            className={`rounded-full p-3 transition-all ${
+                                isInCart(productId)
+                                    ? "bg-emerald-600 text-white cursor-not-allowed opacity-90"
+                                    : outOfStock || addingToCart
+                                    ? "bg-slate-700 text-slate-400 cursor-not-allowed"
+                                    : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg active:scale-95"
+                            }`}
+                        >
+                            {addingToCart ? (
+                                <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                            ) : isInCart(productId) ? (
+                                <FiCheck size={16} />
+                            ) : (
+                                <FiShoppingCart size={16} />
+                            )}
+                        </button>
                     </div>
 
                     <span
-                       onClick={() => navigate(`/product-details?id=${product._id}`, { state: { product } })}
-                        className={`block w-full rounded-full px-4 py-2.5 text-center text-sm font-semibold transition ${outOfStock
+                        onClick={() => navigate(`/product-details?id=${product._id}`, { state: { product } })}
+                        className={`block w-full rounded-full px-4 py-2.5 text-center text-sm font-semibold transition cursor-pointer ${outOfStock
                             ? "bg-gray-500 text-black dark:text-white cursor-not-allowed"
                             : "bg-primary-500 text-black dark:text-white group-hover:bg-primary-600"
                             }`}

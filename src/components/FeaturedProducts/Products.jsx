@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import ViewAll from '../Buttons/ViewAll';
 import ProductCard from './ProductCard';
 import api, { getProducts } from '../../api/api';
@@ -9,6 +10,7 @@ export default function Products() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [wishlistIds, setWishlistIds] = useState(new Set());
+    const [wishlistLoading, setWishlistLoading] = useState({});
 
  
     const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -65,9 +67,11 @@ export default function Products() {
    
     const toggleFavorite = async (product) => {
         const productId = getProductId(product);
-        if (!productId) return;
+        if (!productId || wishlistLoading[productId]) return;
 
         const isFavorite = wishlistIds.has(productId);
+        setWishlistLoading((prev) => ({ ...prev, [productId]: true }));
+
         try {
             if (isFavorite) {
                 await api.delete(`/wishlists/remove/${productId}`);
@@ -76,6 +80,7 @@ export default function Products() {
                     next.delete(productId);
                     return next;
                 });
+                toast.success("Removed from wishlist!");
             } else {
                 await api.post(`/wishlists/add/${productId}`);
                 setWishlistIds((prev) => {
@@ -83,10 +88,14 @@ export default function Products() {
                     next.add(productId);
                     return next;
                 });
+                toast.success("Added to wishlist!");
             }
             window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: { action: isFavorite ? 'remove' : 'add' } }));
         } catch (err) {
             console.error('Home favorite toggle failed:', err);
+            toast.error(err.response?.data?.message || "Failed to update wishlist.");
+        } finally {
+            setWishlistLoading((prev) => ({ ...prev, [productId]: false }));
         }
     };
 
@@ -131,6 +140,7 @@ export default function Products() {
                                     product={product}
                                     isDarkMode={isDarkMode}
                                     isFavorite={productId ? wishlistIds.has(productId) : false}
+                                    isFavoriteLoading={productId ? Boolean(wishlistLoading[productId]) : false}
                                     toggleFavorite={() => toggleFavorite(product)}
                                 />
                             );

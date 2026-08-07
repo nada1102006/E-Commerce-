@@ -6,6 +6,7 @@ import {
   Heart,
   Star,
   AlertCircle,
+  Check,
 } from "lucide-react";
 import api from "../api/api";
 import { toast, ToastContainer } from "react-toastify";
@@ -13,13 +14,21 @@ import { useCart } from "../context/CartContext";
 
 export default function Wishlist() {
   const navigate = useNavigate();
-  const { addToCart: cartContextAddToCart } = useCart();
+  const { addToCart: cartContextAddToCart, cart } = useCart();
 
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [addingToCart, setAddingToCart] = useState({});
   const [removing, setRemoving] = useState({});
+
+  const isInCart = (productId) => {
+    if (!productId || !cart?.items) return false;
+    return cart.items.some((item) => {
+      const pId = item.product?._id || item.product || item.id || item._id;
+      return String(pId) === String(productId);
+    });
+  };
 
   function isLoggedIn() {
     const token = localStorage.getItem("userToken");
@@ -146,21 +155,17 @@ export default function Wishlist() {
   }
   if (loading) {
     return (
-      <div className="min-h-screen dark:bg-[#0B1120] text-white pt-12 sm:pt-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold mb-8">My Wishlist</h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-[#1e253b] rounded-2xl h-[400px] animate-pulse"></div>
-            ))}
-          </div>
+      <div className="min-h-screen flex flex-col justify-center items-center bg-white dark:bg-[#070B1A] text-gray-900 dark:text-white pt-14 sm:pt-16 pb-16 px-4">
+        <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600/20 border-t-indigo-600"></div>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading your wishlist...</p>
         </div>
       </div>
     );
   }
   if (error || !isLoggedIn()) {
     return (
-      <div className="min-h-screen bg-[#0B1120] text-white flex items-center justify-center px-4 pt-12 sm:pt-16">
+      <div className="min-h-screen bg-white dark:bg-[#070B1A] text-gray-900 dark:text-white flex items-center justify-center px-4 pt-12 sm:pt-16">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">
@@ -168,7 +173,7 @@ export default function Wishlist() {
           </h2>
           <button
             onClick={() => navigate("/login")}
-            className="mt-4 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+            className="mt-4 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors text-white"
           >
             Login
           </button>
@@ -178,7 +183,7 @@ export default function Wishlist() {
   }
   if (wishlistItems.length === 0) {
     return (
-      <div className="min-h-screen dark:bg-[#0B1120] text-white pt-12 sm:pt-16 px-4">
+      <div className="min-h-screen bg-white dark:bg-[#070B1A] text-gray-900 dark:text-white pt-12 sm:pt-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold mb-8">My Wishlist</h1>
           <div className="text-center py-20">
@@ -199,7 +204,7 @@ export default function Wishlist() {
     );
   }
   return (
-    <div className="min-h-screen dark:bg-[#0B1120] text-gray-100 pb-20 pt-12 sm:pt-16">
+    <div className="min-h-screen dark:bg-[#070B1A] text-gray-100 pb-20 pt-12 sm:pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-black dark:text-white">My Wishlist</h1>
@@ -274,9 +279,9 @@ export default function Wishlist() {
                         <Star
                           key={star}
                           className={`w-3.5 h-3.5 ${
-                            star <= Math.round(product.averageRating || 0)
+                            star <= Math.round(product.averageRating || product.ratingsAverage || product.rating || 0)
                               ? "text-yellow-400 fill-yellow-400"
-                              : "text-gray-600"
+                              : "text-gray-300 dark:text-gray-600"
                           }`}
                         />
                       ))}
@@ -299,15 +304,27 @@ export default function Wishlist() {
 
                   <button
                     onClick={() => addToCart(productId)}
-                    disabled={product.stock === 0 || isAdding}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed rounded-xl text-sm font-medium transition-all"
+                    disabled={product.stock === 0 || isAdding || isInCart(productId)}
+                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all text-white ${
+                      isInCart(productId)
+                        ? "bg-emerald-600 dark:bg-emerald-700 cursor-not-allowed opacity-90"
+                        : "bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed"
+                    }`}
                   >
                     {isAdding ? (
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : isInCart(productId) ? (
+                      <Check className="w-4 h-4" />
                     ) : (
                       <ShoppingCart className="w-4 h-4" />
                     )}
-                    {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                    {product.stock === 0
+                      ? "Out of Stock"
+                      : isAdding
+                      ? "Adding..."
+                      : isInCart(productId)
+                      ? "In Cart"
+                      : "Add to Cart"}
                   </button>
                 </div>
               </div>
