@@ -1,10 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import {
-  FiTruck,
-  FiAward,
-  FiHeadphones,
-} from "react-icons/fi";
+import { FiTruck, FiAward, FiHeadphones } from "react-icons/fi";
 
 import phone from "../../imges/phone.jfif";
 import watch from "../../imges/watch.jfif";
@@ -81,7 +77,6 @@ export default function HeroSection() {
         animate-gradient
       "
       >
-        {/* Animated Background */}
         <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-0 w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] rounded-full bg-indigo-400/30 blur-3xl animate-blob"></div>
           <div className="absolute bottom-0 right-0 w-[200px] sm:w-[350px] h-[200px] sm:h-[350px] rounded-full bg-pink-400/30 blur-3xl animate-blob animation-delay-2000"></div>
@@ -90,7 +85,6 @@ export default function HeroSection() {
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 xl:gap-14 w-full">
-            {/* Left Content Column */}
             <div className="w-full lg:w-1/2 text-center lg:text-left dark:text-white">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight tracking-tight">
                 Shop the future,
@@ -133,23 +127,31 @@ export default function HeroSection() {
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-3.5 sm:gap-5 mt-5 sm:mt-7 text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium">
                 <div className="flex items-center gap-1.5 hover:text-indigo-600 transition">
-                  <FiTruck size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                  <FiTruck
+                    size={18}
+                    className="text-indigo-600 dark:text-indigo-400 shrink-0"
+                  />
                   <span>Free Shipping</span>
                 </div>
 
                 <div className="flex items-center gap-1.5 hover:text-indigo-600 transition">
-                  <FiAward size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                  <FiAward
+                    size={18}
+                    className="text-indigo-600 dark:text-indigo-400 shrink-0"
+                  />
                   <span>Quality Guarantee</span>
                 </div>
 
                 <div className="flex items-center gap-1.5 hover:text-indigo-600 transition">
-                  <FiHeadphones size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                  <FiHeadphones
+                    size={18}
+                    className="text-indigo-600 dark:text-indigo-400 shrink-0"
+                  />
                   <span>24/7 Support</span>
                 </div>
               </div>
             </div>
 
-            {/* Right Showcase Column */}
             <div className="w-full lg:w-1/2 flex justify-center">
               <div className="relative flex flex-col items-center w-full max-w-[340px]">
                 <span className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-indigo-600 text-white px-3 py-1 rounded-full shadow-md text-xs font-semibold z-10">
