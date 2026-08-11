@@ -2,7 +2,7 @@ import axios from "axios";
 
 
 const api = axios.create({
-  baseURL: "https://e-commerce-api-3wara.vercel.app/",
+  baseURL: import.meta.env.PROD ? "/api" : "https://e-commerce-api-3wara.vercel.app/",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
